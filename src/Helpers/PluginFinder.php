@@ -1,27 +1,43 @@
 <?php namespace WP_Parser;
 
-use Symfony\Component\Yaml\Yaml;
-
+/**
+ * Class PluginFinder
+ *
+ * @package WP_Parser
+ */
 class PluginFinder {
 
-	// Keep track of the plugin found in the directory, including its files.
-
+	/**
+	 * @var string
+	 */
 	private $directory;
-	private $plugin = array();
+
+	/**
+	 * @var array
+	 */
+	private $plugin = [];
 
 	/**
 	 * @var array
 	 */
 	private $exclude_files;
 
-	private $valid_plugins = array();
-
+	/**
+	 * PluginFinder constructor.
+	 *
+	 * @param string $directory	   The directory to search in.
+	 * @param array  $exclude_files The files to exclude.
+	 */
 	public function __construct( $directory, $exclude_files = array() ) {
 		$this->directory 	 = $directory;
 		$this->exclude_files = $exclude_files;
-		$this->valid_plugins = $this->collect_valid_plugins();
 	}
 
+	/**
+	 * Finds files and collects plugin data.
+	 *
+	 * @return void
+	 */
 	public function find() {
 		$files = Utils::get_files( $this->directory, $this->exclude_files );
 
@@ -37,22 +53,31 @@ class PluginFinder {
 		}
 	}
 
+	/**
+	 * Determines whether or not there's a valid plugin present.
+	 *
+	 * @return bool Whether or not a plugin was found.
+	 */
 	public function has_plugin() {
 		return $this->plugin !== array();
 	}
 
+	/**
+	 * Gets the plugin information.
+	 *
+	 * @return array The plugin information.
+	 */
 	public function get_plugin() {
 		return $this->plugin;
 	}
 
-	public function is_valid_plugin() {
-		return array_search( $this->plugin['Name'], array_column( $this->valid_plugins, 'name' ) ) !== false;
-	}
-
-	public function collect_valid_plugins() {
-		return Yaml::parseFile( dirname( __DIR__ ) . '/plugins.yml' );
-	}
-
+	/**
+	 * Gets the plugin data for the passed file.
+	 *
+	 * @param string $file The file to get the plugin data for.
+	 *
+	 * @return array The plugin data or an empty array if none is present.
+	 */
 	private function get_plugin_data( $file ) {
 		$plugin_data = get_plugin_data( $file, false, false );
 

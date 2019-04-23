@@ -31,11 +31,11 @@ class Parser_Taxonomy {
 	/**
 	 * Parser_Post_Type constructor.
 	 *
-	 * @param string $name
-	 * @param string $label
-	 * @param string $slug
-	 * @param array  $object_types
-	 * @param bool   $hierarchical
+	 * @param string $name		   The name of the taxonomy.
+	 * @param string $label		   The label for the taxonomy.
+	 * @param string $slug		   The slug for the taxonomy.
+	 * @param array  $object_types The object types that the taxonomy supports.
+	 * @param bool   $hierarchical Whether or not the taxonomy is hierarchical.
 	 */
 	public function __construct( string $name, string $label, string $slug, array $object_types = [], bool $hierarchical = true ) {
 		$this->name 		= $name;
@@ -45,6 +45,13 @@ class Parser_Taxonomy {
 		$this->hierarchical = $hierarchical;
 	}
 
+	/**
+	 * Registers the taxonomy.
+	 *
+	 * @return void
+	 *
+	 * @throws ErrorException
+	 */
 	public function register() {
 		if ( ! taxonomy_exists( $this->name ) ) {
 			register_taxonomy(

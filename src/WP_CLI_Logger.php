@@ -10,9 +10,11 @@ use Psr\Log\LogLevel;
 class WP_CLI_Logger extends AbstractLogger {
 
 	/**
-	 * @param string $level
-	 * @param string $message
-	 * @param array  $context
+	 * Logs messages to be sent to the CLI.
+	 *
+	 * @param string $level		The message level.
+	 * @param string $message	The message.
+	 * @param array  $context	The context of the message.
 	 *
 	 * @return void
 	 */

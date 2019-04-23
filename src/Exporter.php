@@ -17,6 +17,9 @@ use phpDocumentor\Reflection\ReflectionAbstract;
  */
 class Exporter {
 
+	/**
+	 * @var array
+	 */
 	private $default_docblock = [
 		'description'      => '',
 		'long_description' => '',
@@ -100,6 +103,13 @@ class Exporter {
 		return $output;
 	}
 
+	/**
+	 * Gets the tag description.
+	 *
+	 * @param Tag $tag The tag to get the description from.
+	 *
+	 * @return string|string[]|null The tag description.
+	 */
 	protected function get_tag_description( $tag ) {
 		$description = preg_replace( '/[\n\r]+/', ' ', Formatter::format_description( $tag->getDescription() ) );
 

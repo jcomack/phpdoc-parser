@@ -31,11 +31,11 @@ class Parser_Post_Type {
 	/**
 	 * Parser_Post_Type constructor.
 	 *
-	 * @param string $name
-	 * @param string $label
-	 * @param string $slug
+	 * @param string $name		   The name of the post type.
+	 * @param string $label		   The label for the post type.
+	 * @param string $slug		   The slug for the post type.
 	 * @param string $archive_name The archive name.
-	 * @param array  $supports
+	 * @param array  $supports	   What type of support is offered by the post type.
 	 */
 	public function __construct( string $name, string $label, string $slug, string $archive_name, array $supports = [] ) {
 		$this->name 		= $name;
@@ -45,6 +45,13 @@ class Parser_Post_Type {
 		$this->supports 	= $supports;
 	}
 
+	/**
+	 * Registers the post type.
+	 *
+	 * @return void
+	 *
+	 * @throws ErrorException
+	 */
 	public function register() {
 		if ( ! post_type_exists( $this->name ) ) {
 
