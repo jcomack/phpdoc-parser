@@ -6,7 +6,7 @@ use WP_CLI;
 use WP_CLI_Command;
 
 // Temporary toggle until we figure out what's going wrong with the plugins taxonomy.
-const USE_PLUGIN_PREFIX = false;
+const USE_PLUGIN_PREFIX = true;
 
 /**
  * Converts PHPDoc markup into a template ready for import to a WordPress blog.
@@ -91,7 +91,10 @@ class Command extends WP_CLI_Command {
 	public function create( $args, $assoc_args ) {
 		list( $directory ) = $args;
 		$directory = realpath( $directory );
-		$ignore_files = empty( $assoc_args['ignore_files'] ) ? array() : explode( ',', $assoc_args['ignore_files'] );
+
+		$ignore_default = [ 'vendor', 'vendor_prefixed', 'node_modules', 'tests', 'build', 'js' ];
+
+		$ignore_files = empty( $assoc_args['ignore_files'] ) ?  $ignore_default : explode( ',', $assoc_args['ignore_files'] );
 
 		if ( empty( $directory ) ) {
 			WP_CLI::error( sprintf( "Can't read %1\$s. Does the file exist?", $directory ) );
@@ -101,6 +104,9 @@ class Command extends WP_CLI_Command {
 		WP_CLI::line();
 
 		$data = $this->_get_phpdoc_data( $directory, 'array', $ignore_files );
+
+
+
 
 		// Import data
 		$this->_do_import( $data, isset( $assoc_args['quick'] ), isset( $assoc_args['import-internal'] ) );
@@ -123,11 +129,6 @@ class Command extends WP_CLI_Command {
 			// Determine whether this is a plugin we can parse.
 			$plugin_finder = new PluginFinder( $path, $ignore_files );
 			$plugin_finder->find();
-
-			if ( ! $plugin_finder->is_valid_plugin() ) {
-				WP_CLI::error( "Sorry, the directory you selected doesn't contain a valid Yoast plugin" );
-				exit;
-			}
 
 			$runner = new Runner( $plugin_finder->get_plugin() );
 		} else {
@@ -170,7 +171,7 @@ class Command extends WP_CLI_Command {
 
 		// Run the importer
 		$importer = new Importer();
-		$importer->setLogger( new WP_CLI_Logger() );
+		$importer->get_logger()->setLogger( new WP_CLI_Logger() );
 		$importer->import( $data, $skip_sleep, $import_ignored );
 
 		WP_CLI::line();
