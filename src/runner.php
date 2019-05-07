@@ -1,10 +1,6 @@
 <?php namespace WP_Parser;
 
-use phpDocumentor\Reflection\ClassReflector;
-use phpDocumentor\Reflection\Exception\UnparsableFile;
-use phpDocumentor\Reflection\Exception\UnreadableFile;
 use Symfony\Component\Finder\Finder;
-use Symfony\Component\Finder\SplFileInfo;
 use WP_CLI;
 use WP_Parser\PluginParser\PluginInterface;
 
