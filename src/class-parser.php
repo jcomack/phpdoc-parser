@@ -3,7 +3,7 @@
 /**
  * Main plugin's class. Registers things and adds WP CLI command.
  */
-class Plugin {
+class Parser {
 
 	/**
 	 * @var \WP_Parser\Relationships
@@ -228,7 +228,7 @@ class Plugin {
 		}
 
 		list( $class, $method ) = explode( '-', $post->post_name );
-		
+
 		return home_url( user_trailingslashit( "method/$class/$method" ) );
 	}
 

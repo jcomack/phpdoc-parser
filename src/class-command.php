@@ -2,6 +2,8 @@
 
 namespace WP_Parser;
 
+use phpDocumentor\Reflection\Exception\UnparsableFile;
+use phpDocumentor\Reflection\Exception\UnreadableFile;
 use WP_CLI;
 use WP_CLI_Command;
 
@@ -21,8 +23,8 @@ class Command extends WP_CLI_Command {
 	 * @param array $args       The arguments to pass to the command.
 	 * @param array $assoc_args The associated arguments to pass to the command.
 	 *
-	 * @throws \phpDocumentor\Reflection\Exception\UnparsableFile
-	 * @throws \phpDocumentor\Reflection\Exception\UnreadableFile
+	 * @throws UnparsableFile
+	 * @throws UnreadableFile
 	 */
 	public function export( $args, $assoc_args ) {
 		$directory    = realpath( $args[0] );
@@ -85,8 +87,8 @@ class Command extends WP_CLI_Command {
 	 * @param array $args       The arguments to pass to the command.
 	 * @param array $assoc_args The associated arguments to pass to the command.
 	 *
-	 * @throws \phpDocumentor\Reflection\Exception\UnparsableFile
-	 * @throws \phpDocumentor\Reflection\Exception\UnreadableFile
+	 * @throws UnparsableFile
+	 * @throws UnreadableFile
 	 */
 	public function create( $args, $assoc_args ) {
 		list( $directory ) = $args;
@@ -114,30 +116,17 @@ class Command extends WP_CLI_Command {
 	 * @param array  $ignore_files What files to ignore.
 	 *
 	 * @return string|array
-	 * @throws \phpDocumentor\Reflection\Exception\UnparsableFile
-	 * @throws \phpDocumentor\Reflection\Exception\UnreadableFile
+	 * @throws UnparsableFile
+	 * @throws UnreadableFile
 	 */
 	protected function _get_phpdoc_data( $path, $format = 'json', $ignore_files = array() ) {
-
-		if ( USE_PLUGIN_PREFIX === true ) {
-			// Determine whether this is a plugin we can parse.
-			$plugin_finder = new PluginFinder( $path, $ignore_files );
-			$plugin_finder->find();
-
-			if ( ! $plugin_finder->is_valid_plugin() ) {
-				WP_CLI::error( "Sorry, the directory you selected doesn't contain a valid Yoast plugin" );
-				exit;
-			}
-
-			$runner = new Runner( $plugin_finder->get_plugin() );
-		} else {
-			$runner = new Runner();
-		}
+		$ignore_files = ! empty( $ignore_files ) ? $ignore_files : [ 'vendor', 'vendor_prefixed', 'node_modules', 'tests', 'build' ];
 
 		WP_CLI::line( sprintf( 'Extracting PHPDoc from %1$s. This may take a few minutes...', $path ) );
 
+		// Collect the files.
 		$is_file = is_file( $path );
-		$files   = $is_file ? array( $path ) : Utils::get_files( $path, $ignore_files );
+		$files   = $is_file ? [ $path ] : Utils::get_files( $path, $ignore_files );
 		$path    = $is_file ? dirname( $path ) : $path;
 
 		if ( $files instanceof \WP_Error ) {
@@ -145,7 +134,13 @@ class Command extends WP_CLI_Command {
 			exit;
 		}
 
-		$output = $runner->parse_files( $files, $path );
+		// Loop through files and get plugin data.
+		$plugin_data = PluginFinder::find( $files );
+
+		$runner = new Runner( $path, $plugin_data );
+		$output = $runner->parse_files( $files );
+
+		// TODO: Output to array, old keys.
 
 		if ( $format === 'json' ) {
 			return json_encode( $output, JSON_PRETTY_PRINT );

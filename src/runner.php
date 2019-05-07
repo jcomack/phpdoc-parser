@@ -1,6 +1,12 @@
 <?php namespace WP_Parser;
 
+use phpDocumentor\Reflection\ClassReflector;
+use phpDocumentor\Reflection\Exception\UnparsableFile;
+use phpDocumentor\Reflection\Exception\UnreadableFile;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\SplFileInfo;
 use WP_CLI;
+use WP_Parser\PluginParser\PluginInterface;
 
 /**
  * Class Runner
@@ -9,37 +15,55 @@ use WP_CLI;
  */
 class Runner {
 	private $exporter;
-	private $plugin_data;
+	private $plugin;
+	private $directory;
 
 	/**
 	 * Runner constructor.
 	 *
-	 * @param array $plugin_data The plugin data to use.
+	 * @param                 $directory
+	 * @param PluginInterface $plugin
 	 */
-	public function __construct( $plugin_data = array() ) {
+	public function __construct( $directory, PluginInterface $plugin ) {
 		$this->exporter = new Exporter();
-		$this->plugin_data = $plugin_data;
+
+		$this->directory = $directory;
+		$this->plugin = $plugin;
 	}
 
 	/**
 	 * Parses the passed files and attempts to extract the proper docblocks from the files.
 	 *
-	 * @param array  $files The files to extract the docblocks from.
-	 * @param string $root	The root path where the parsing was initially started in.
+	 * @param Finder $files The files to extract the docblocks from.
 	 *
 	 * @return array The extracted docblocks.
 	 *
-	 * @throws \phpDocumentor\Reflection\Exception\UnparsableFile Thrown if the file can't be parsed.
-	 * @throws \phpDocumentor\Reflection\Exception\UnreadableFile Thrown if the file can't be read.
+	 * @throws UnparsableFile Thrown if the file can't be parsed.
+	 * @throws UnreadableFile Thrown if the file can't be read.
 	 */
-	public function parse_files( $files, $root ) {
+	public function parse_files( Finder $files ) {
 
 		$output = array();
+		$root = $this->directory;
 
-		foreach ( $files as $filename ) {
-			$filename = $filename->getPathname();
+		$factory = DocFileFactory::fromFiles( $files, $this->directory, $this->plugin );
+
+		$array_format = array_map( function( $file ) { return $file->toArray(); }, $factory );
+
+		/** @var SplFileInfo $fileInfo */
+		foreach ( $files as $fileInfo ) {
+
+			$filename = $fileInfo->getPathname();
 			$file 	  = new File_Reflector( $filename );
 			$path 	  = ltrim( substr( $filename, strlen( $root ) ), DIRECTORY_SEPARATOR );
+
+
+//						var_dump(
+//							$fileInfo,
+//							$path,
+//							str_replace( DIRECTORY_SEPARATOR, '/', $file->getFilename() )
+//						);die;
+
 
 			$file->setFilename( $path );
 			$file->process();
@@ -65,10 +89,6 @@ class Runner {
 					'type' => $include->getType(),
 				);
 
-				if ( ! empty( $this->plugin_data ) ) {
-					$include_data['plugin'] = $this->plugin_data['Name'];
-				}
-
 				$out['includes'][] = $include_data;
 			}
 
@@ -78,10 +98,6 @@ class Runner {
 					'line'  => $constant->getLineNumber(),
 					'value' => $constant->getValue(),
 				);
-
-				if ( ! empty( $this->plugin_data ) ) {
-					$constant_data['plugin'] = $this->plugin_data['Name'];
-				}
 
 				$out['constants'][] = $constant_data;
 			}
@@ -110,13 +126,10 @@ class Runner {
 					}
 				}
 
-				if ( ! empty( $this->plugin_data ) ) {
-					$func['plugin'] = $this->plugin_data['Name'];
-				}
-
 				$out['functions'][] = $func;
 			}
 
+			/** @var ClassReflector $class */
 			foreach ( $file->getClasses() as $class ) {
 				$class_data = array(
 					'name'       => $class->getShortName(),
@@ -132,15 +145,25 @@ class Runner {
 					'doc'        => $this->exporter->export_docblock( $class ),
 				);
 
-				if ( ! empty( $this->plugin_data ) ) {
-					$class_data['plugin'] = $this->plugin_data['Name'];
-				}
-
 				$out['classes'][] = $class_data;
 			}
 
 			$output[] = $out;
 		}
+
+
+//		var_dump(array_values($output));die;
+
+		$fp = fopen('old.json', 'w' );
+		fwrite($fp, json_encode( array_slice( $output, 0, 10 ) ) );
+		fclose($fp);
+
+		$fp = fopen('new.json', 'w' );
+		fwrite($fp, json_encode( array_slice( $array_format, 0, 10 ) ) );
+		fclose($fp);
+
+		die;
+
 
 		return $output;
 	}

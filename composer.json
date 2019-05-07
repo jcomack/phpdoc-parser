@@ -27,7 +27,6 @@
 		"scribu/lib-posts-to-posts": "dev-master@dev",
 		"scribu/scb-framework"     : "dev-master@dev",
 		"psr/log"                  : "~1.0",
-		"symfony/yaml": "^4.2",
 		"symfony/finder": "^4.2"
 	},
 	"autoload"   : {

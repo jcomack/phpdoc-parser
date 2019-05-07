@@ -15,6 +15,7 @@ use phpDocumentor\Reflection\ReflectionAbstract;
  * @package WP_Parser
  */
 class Exporter {
+
 	/**
 	 * Exports the docblock for the passed element.
 	 *
