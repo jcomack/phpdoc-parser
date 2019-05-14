@@ -19,7 +19,7 @@ class DocFileFactory {
 	 * @return array
 	 */
 	public static function fromFiles( Finder $files, $root_directory, PluginInterface $plugin ) {
-		$doc_files = [];
+		$doc_files = array();
 
 		/** @var SplFileInfo $file */
 		foreach ( $files as $file ) {

@@ -8,14 +8,17 @@ use WP_Parser\PluginParser\PluginInterface;
  * @package WP_Parser\DocPart
  */
 abstract class DocAbstract {
+
 	/**
 	 * @var string
 	 */
 	protected $filename;
+
 	/**
 	 * @var string
 	 */
 	protected $fullPath;
+
 	/**
 	 * @var string
 	 */
@@ -31,6 +34,13 @@ abstract class DocAbstract {
 	 */
 	protected $plugin;
 
+	/**
+	 * DocAbstract constructor.
+	 *
+	 * @param SplFileInfo     $file   The file to parse.
+	 * @param string      	  $root   The root of the file.
+	 * @param PluginInterface $plugin The plugin data collector.
+	 */
 	public function __construct( SplFileInfo $file, $root, PluginInterface $plugin ) {
 		$this->filename     = $file->getFilename();
 		$this->fullPath 	= $file->getPathname();
@@ -39,5 +49,10 @@ abstract class DocAbstract {
 		$this->plugin		= $plugin;
 	}
 
+	/**
+	 * Parses the file data.
+	 *
+	 * @return mixed The parsed data.
+	 */
 	abstract protected function parse();
 }

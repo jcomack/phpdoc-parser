@@ -22,9 +22,6 @@ class Command extends WP_CLI_Command {
 	 *
 	 * @param array $args       The arguments to pass to the command.
 	 * @param array $assoc_args The associated arguments to pass to the command.
-	 *
-	 * @throws UnparsableFile
-	 * @throws UnreadableFile
 	 */
 	public function export( $args, $assoc_args ) {
 		$directory    = realpath( $args[0] );
@@ -35,7 +32,7 @@ class Command extends WP_CLI_Command {
 		$result      = file_put_contents( $output_file, $json );
 		WP_CLI::line();
 
-		if ( false === $result ) {
+		if ( $result === false ) {
 			WP_CLI::error( sprintf( 'Problem writing %1$s bytes of data to %2$s', strlen( $json ), $output_file ) );
 			exit;
 		}
@@ -116,8 +113,6 @@ class Command extends WP_CLI_Command {
 	 * @param array  $ignore_files What files to ignore.
 	 *
 	 * @return string|array
-	 * @throws UnparsableFile
-	 * @throws UnreadableFile
 	 */
 	protected function _get_phpdoc_data( $path, $format = 'json', $ignore_files = array() ) {
 		$ignore_files = ! empty( $ignore_files ) ? $ignore_files : [ 'vendor', 'vendor_prefixed', 'node_modules', 'tests', 'build' ];
@@ -139,8 +134,6 @@ class Command extends WP_CLI_Command {
 
 		$runner = new Runner( $path, $plugin_data );
 		$output = $runner->parse_files( $files );
-
-		// TODO: Output to array, old keys.
 
 		if ( $format === 'json' ) {
 			return json_encode( $output, JSON_PRETTY_PRINT );
@@ -165,7 +158,7 @@ class Command extends WP_CLI_Command {
 
 		// Run the importer
 		$importer = new Importer();
-		$importer->setLogger( new WP_CLI_Logger() );
+		$importer->get_logger()->setLogger( new WP_CLI_Logger() );
 		$importer->import( $data, $skip_sleep, $import_ignored );
 
 		WP_CLI::line();

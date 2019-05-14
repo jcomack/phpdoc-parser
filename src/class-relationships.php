@@ -69,56 +69,38 @@ class Relationships {
 	 * @link  https://github.com/scribu/wp-posts-to-posts/wiki/p2p_register_connection_type
 	 */
 	public function register_post_relationships() {
+		$this->register_connection( 'functions_to_functions', 'wp-parser-function', 'wp-parser-function', [ 'from' => 'Uses Functions', 'to' => 'Used by Functions' ], true );
+		$this->register_connection( 'functions_to_methods', 'wp-parser-function', 'wp-parser-method', [ 'from' => 'Uses Methods', 'to' => 'Used by Functions' ] );
+		$this->register_connection( 'functions_to_hooks', 'wp-parser-function', 'wp-parser-hook', [ 'from' => 'Uses Hooks', 'to' => 'Used by Functions' ] );
+		$this->register_connection( 'methods_to_functions', 'wp-parser-method', 'wp-parser-function', [ 'from' => 'Uses Hooks', 'to' => 'Used by Functions' ] );
+		$this->register_connection( 'methods_to_methods', 'wp-parser-method', 'wp-parser-method', [ 'from' => 'Uses Methods', 'to' => 'Used by Methods' ] );
+		$this->register_connection( 'methods_to_hooks', 'wp-parser-method', 'wp-parser-hook', [ 'from' => 'Used by Methods', 'to' => 'Uses Hooks' ] );
+	}
 
-		/*
-		 * Functions to functions, methods and hooks
-		 */
-		p2p_register_connection_type( array(
-			'name' => 'functions_to_functions',
-			'from' => 'wp-parser-function',
-			'to' => 'wp-parser-function',
-			'self_connections' => 'true',
-			'title' => array( 'from' => 'Uses Functions', 'to' => 'Used by Functions' ),
-		) );
+	/**
+	 * Registers a new connection.
+	 *
+	 * @param string $name 			   The name of the connection.
+	 * @param string $from 			   The post type to connect from.
+	 * @param string $to			   The post type to connect to.
+	 * @param array  $titles		   The titles to assign
+	 * @param bool   $self_connections Whether to allow a post/user to connect to itself.
+	 *
+	 * @return void
+	 */
+	protected function register_connection( string $name, string $from, string $to, array $titles, $self_connections = false ) {
+		$connection = array(
+			'name' 	=> $name,
+			'from' 	=> $from,
+			'to' 	=> $to,
+			'title' => $titles,
+		);
 
-		p2p_register_connection_type( array(
-			'name' => 'functions_to_methods',
-			'from' => 'wp-parser-function',
-			'to' => 'wp-parser-method',
-			'title' => array( 'from' => 'Uses Methods', 'to' => 'Used by Functions' ),
-		) );
+		if ( $self_connections === true ) {
+			$connection['self_connections'] = 'true';
+		}
 
-		p2p_register_connection_type( array(
-			'name' => 'functions_to_hooks',
-			'from' => 'wp-parser-function',
-			'to' => 'wp-parser-hook',
-			'title' => array( 'from' => 'Uses Hooks', 'to' => 'Used by Functions' ),
-		) );
-
-		/*
-		 * Methods to functions, methods and hooks
-		 */
-		p2p_register_connection_type( array(
-			'name' => 'methods_to_functions',
-			'from' => 'wp-parser-method',
-			'to' => 'wp-parser-function',
-			'title' => array( 'from' => 'Uses Functions', 'to' => 'Used by Methods' ),
-		) );
-
-		p2p_register_connection_type( array(
-			'name' => 'methods_to_methods',
-			'from' => 'wp-parser-method',
-			'to' => 'wp-parser-method',
-			'self_connections' => 'true',
-			'title' => array( 'from' => 'Uses Methods', 'to' => 'Used by Methods' ),
-		) );
-
-		p2p_register_connection_type( array(
-			'name' => 'methods_to_hooks',
-			'from' => 'wp-parser-method',
-			'to' => 'wp-parser-hook',
-			'title' => array( 'from' => 'Used by Methods', 'to' => 'Uses Hooks' ),
-		) );
+		p2p_register_connection_type( $connection );
 	}
 
 	/**
@@ -151,7 +133,7 @@ class Relationships {
 		$tables = $wpdb->get_col( 'SHOW TABLES' );
 
 		// There is no way to get the name out of P2P so we hard code it here.
-		return in_array( $wpdb->prefix . 'p2p', $tables );
+		return in_array( $wpdb->prefix . 'p2p', $tables, true );
 	}
 
 	/**
@@ -164,84 +146,55 @@ class Relationships {
 	 * @param array $post_data Post data
 	 */
 	public function import_item( $post_id, $data, $post_data ) {
-
 		$from_type = $post_data['post_type'];
-		$slug = $post_data['post_name'];
+		$this->slugs_to_ids[ $from_type ][ $post_data['post_name'] ] = $post_id;
 
-		$this->slugs_to_ids[ $from_type ][ $slug ] = $post_id;
+		$sub_types = array(
+			'function' => 'functions',
+			'method' => 'methods',
+			'hook' => 'hooks'
+		);
 
-		// Build Relationships: Functions
-		if ( $this->post_types['function'] == $from_type ) {
-
-			// Functions to Functions
-			$to_type = $this->post_types['function'];
-			foreach ( (array) @$data['uses']['functions'] as $to_function ) {
-				$to_function_slug = $this->names_to_slugs( $to_function['name'], $data['namespace'] );
-
-				$this->relationships[ $from_type ][ $post_id ][ $to_type ][] = $to_function_slug;
-			}
-
-			// Functions to Methods
-			$to_type = $this->post_types['method'];
-			foreach ( (array) @$data['uses']['methods'] as $to_method ) {
-
-				if ( $to_method['static'] || ! empty( $to_method['class'] ) ) {
-					$to_method_slug = $to_method['class'] . '-' . $to_method['name'];
-				} else {
-					$to_method_slug = $to_method['name'];
-				}
-				$to_method_slug = $this->names_to_slugs( $to_method_slug, $data['namespace'] );
-
-				$this->relationships[ $from_type ][ $post_id ][ $to_type ][] = $to_method_slug;
-			}
-
-			// Functions to Hooks
-			$to_type = $this->post_types['hook'];
-			foreach ( (array) @$data['hooks'] as $to_hook ) {
-				// Never a namespace on a hook so don't send one.
-				$to_hook_slug = $this->names_to_slugs( $to_hook['name'] );
-
-				$this->relationships[ $from_type ][ $post_id ][ $to_type ][] = $to_hook_slug;
-			}
-		}
-
-		if ( $this->post_types['method'] === $from_type ) {
-
-			// Methods to Functions
-			$to_type = $this->post_types['function'];
-			foreach ( (array) @$data['uses']['functions'] as $to_function ) {
-				$to_function_slug = $this->names_to_slugs( $to_function['name'], $data['namespace'] );
-
-				$this->relationships[ $from_type ][ $post_id ][ $to_type ][] = $to_function_slug;
-			}
-
-			// Methods to Methods
-			$to_type = $this->post_types['method'];
-			foreach ( (array) @$data['uses']['methods'] as $to_method ) {
-
-				if ( ! is_string( $to_method['name'] ) ) { // might contain variable node for dynamic method calls
+		if ( $from_type === $this->post_types['function'] || $from_type === $this->post_types['method'] ) {
+			foreach ( $sub_types as $to => $from ) {
+				if ( ! array_key_exists( 'uses', $data ) || ! array_key_exists( $from, $data['uses'] ) ) {
 					continue;
 				}
 
-				if ( $to_method['static'] || ! empty( $to_method['class'] ) ) {
-					$to_method_slug = $to_method['class'] . '-' . $to_method['name'];
-				} else {
-					$to_method_slug = $to_method['name'];
+				$to_type = $this->post_types[ $to ];
+
+				foreach ( (array) $data['uses'][ $from ] as $to_item ) {
+					if ( ! is_string( $to_item['name'] ) ) {
+						// might contain variable node for dynamic calls
+						continue;
+					}
+
+					$to_item_slug = $to_item['name'];
+
+					// If linking to a method, we need to alter the slug in case it's static or references a class.
+					if ( $to === 'method' && ( $to_item['static'] || ! empty( $to_item['class'] ) ) ) {
+						$to_item_slug = $to_item['class'] . '-' . $to_item['name'];
+					}
+
+					$namespace = ( $to === 'hook' ) ? null : $data['namespace'];
+
+					$this->add_relationship( $post_id, $from_type, $to_type, $to_item_slug, $namespace );
 				}
-				$to_method_slug = $this->names_to_slugs( $to_method_slug, $data['namespace'] );
-
-				$this->relationships[ $from_type ][ $post_id ][ $to_type ][] = $to_method_slug;
-			}
-
-			// Methods to Hooks
-			$to_type = $this->post_types['hook'];
-			foreach ( (array) @$data['hooks'] as $to_hook ) {
-				$to_hook_slug = $this->names_to_slugs( $to_hook['name'] );
-
-				$this->relationships[ $from_type ][ $post_id ][ $to_type ][] = $to_hook_slug;
 			}
 		}
+	}
 
+	/**
+	 * Adds a relation to the stack.
+	 *
+	 * @param      $post_id	  The post ID.
+	 * @param      $from	  The item to relate from.
+	 * @param      $to		  The item to relate to.
+	 * @param      $name	  The name to apply to the relationship.
+	 * @param null $namespace The namespace to add.
+	 */
+	protected function add_relationship( $post_id, $from, $to, $name, $namespace = null ) {
+		$this->relationships[ $from ][ $post_id ][ $to ][] = $this->names_to_slugs( $name, $namespace );
 	}
 
 	/**
@@ -385,13 +338,14 @@ class Relationships {
 	 *                           namespace, and falling back to the global namespace.
 	 */
 	public function names_to_slugs( $name, $namespace = null ) {
-		$fully_qualified = ( 0 === strpos( '\\', $name ) );
-		$name = ltrim( $name, '\\' );
+		$fully_qualified = ( strpos( '\\', $name ) === 0 );
+		$name  = ltrim( $name, '\\' );
 		$names = array();
 
 		if ( $namespace && ! $fully_qualified  ) {
 			$names[] = $this->name_to_slug( $namespace . '\\' . $name );
 		}
+
 		$names[] = $this->name_to_slug( $name );
 
 		return $names;

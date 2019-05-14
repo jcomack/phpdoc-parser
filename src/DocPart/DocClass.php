@@ -154,6 +154,21 @@ class DocClass {
 		return $this->methods;
 	}
 
+	public function getMethodNames() {
+		return array_map( function( $method ) {
+			return $method->getCallable()->getName();
+		}, $this->methods );
+	}
+
+	public function getMethodByName( $name ) {
+		return array_shift( array_filter( $this->methods,
+			function( $method ) use ( $name ) {
+			if ( $method->getCallable()->getName() === $name ) {
+				return $method;
+			}
+		} ) );
+	}
+
 	/**
 	 * @return array
 	 */

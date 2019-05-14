@@ -86,30 +86,6 @@ class Exporter {
 	}
 
 	/**
-	 * Exports a formatted array of hooks based on the passed hooks.
-	 *
-	 * @param Hook_Reflector[] $hooks The hooks to format.
-	 *
-	 * @return array The formatted hooks.
-	 */
-	public function export_hooks( array $hooks ) {
-		$out = array();
-
-		foreach ( $hooks as $hook ) {
-			$out[] = array(
-				'name'      => $hook->getName(),
-				'line'      => $hook->getLineNumber(),
-				'end_line'  => $hook->getNode()->getAttribute( 'endLine' ),
-				'type'      => $hook->getType(),
-				'arguments' => $hook->getArgs(),
-				'doc'       => $this->export_docblock( $hook ),
-			);
-		}
-
-		return $out;
-	}
-
-	/**
 	 * Exports a formatted array of arguments based on te passed arguments.
 	 *
 	 * @param ArgumentReflector[] $arguments The arguments to format.
@@ -153,45 +129,6 @@ class Exporter {
 		}
 
 		return $out;
-	}
-
-	/**
-	 * Exports a formatted array of methods based on the passed methods.
-	 *
-	 * @param MethodReflector[] $methods The methofs to format.
-	 *
-	 * @return array The formatted methods.
-	 */
-	public function export_methods( array $methods ) {
-		$output = array();
-
-		foreach ( $methods as $method ) {
-			$method_data = array(
-				'name'       => $method->getShortName(),
-				'namespace'  => $method->getNamespace(),
-				'aliases'    => $method->getNamespaceAliases(),
-				'line'       => $method->getLineNumber(),
-				'end_line'   => $method->getNode()->getAttribute( 'endLine' ),
-				'final'      => $method->isFinal(),
-				'abstract'   => $method->isAbstract(),
-				'static'     => $method->isStatic(),
-				'visibility' => $method->getVisibility(),
-				'arguments'  => $this->export_arguments( $method->getArguments() ),
-				'doc'        => $this->export_docblock( $method ),
-			);
-
-			if ( ! empty( $method->uses ) ) {
-				$method_data['uses'] = $this->export_uses( $method->uses );
-
-				if ( ! empty( $method->uses['hooks'] ) ) {
-					$method_data['hooks'] = $this->export_hooks( $method->uses['hooks'] );
-				}
-			}
-
-			$output[] = $method_data;
-		}
-
-		return $output;
 	}
 
 	/**

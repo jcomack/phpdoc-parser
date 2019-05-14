@@ -78,6 +78,10 @@ class DocMethod {
 		return $this->static;
 	}
 
+	public function getHooks() {
+		return $this->callable->getHooks();
+	}
+
 	public static function fromReflector( $method ) {
 		return new self(
 			DocCallable::fromReflector( $method ),

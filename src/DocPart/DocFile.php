@@ -1,8 +1,11 @@
 <?php namespace WP_Parser\DocPart;
 
+use phpDocumentor\Reflection\Exception\UnparsableFile;
+use phpDocumentor\Reflection\Exception\UnreadableFile;
 use Symfony\Component\Finder\SplFileInfo;
 use WP_Parser\DocCallableFactory;
 use WP_Parser\DocClassFactory;
+use WP_Parser\DocHookFactory;
 use WP_Parser\Exporter;
 use WP_Parser\File_Reflector;
 use WP_Parser\PluginParser\PluginInterface;
@@ -12,23 +15,54 @@ use WP_Parser\PluginParser\PluginInterface;
  * @package WP_Parser\DocPart
  */
 class DocFile extends DocAbstract {
+	/**
+	 * @var string
+	 */
 	private $description;
+
+	/**
+	 * @var string
+	 */
 	private $longDescription;
 
-	private $tags = [];
-	private $uses = [];
-	private $includes = [];
-	private $constants = [];
-	private $hooks = [];
+	/**
+	 * @var array
+	 */
+	private $tags = array();
+
+	/**
+	 * @var array
+	 */
+	private $uses = array();
+
+	/**
+	 * @var array
+	 */
+	private $includes = array();
+
+	/**
+	 * @var array
+	 */
+	private $constants = array();
+
+	/**
+	 * @var array
+	 */
+	private $hooks = array();
 
 	/**
 	 * @var Exporter
 	 */
 	private $exporter;
+
 	/**
 	 * @var array
 	 */
 	private $functions;
+
+	/**
+	 * @var array
+	 */
 	private $classes;
 	/**
 	 * @var array
@@ -38,9 +72,12 @@ class DocFile extends DocAbstract {
 	/**
 	 * DocFile constructor.
 	 *
-	 * @param SplFileInfo     $file
-	 * @param                 $root
-	 * @param PluginInterface $plugin
+	 * @param SplFileInfo     $file	  The file to parse.
+	 * @param string      	  $root	  The root of the file.
+	 * @param PluginInterface $plugin The plugin data collector.
+	 *
+	 * @throws UnparsableFile
+	 * @throws UnreadableFile
 	 */
 	public function __construct( SplFileInfo $file, $root, PluginInterface $plugin ) {
 		parent::__construct( $file, $root, $plugin );
@@ -50,6 +87,14 @@ class DocFile extends DocAbstract {
 		$this->parse();
 	}
 
+	/**
+	 * Parses the file.
+	 *
+	 * @return void
+	 *
+	 * @throws UnparsableFile
+	 * @throws UnreadableFile
+	 */
 	protected function parse() {
 		$file = new File_Reflector( $this->fullPath );
 		$file->setFilename( $this->relativePath );
@@ -70,33 +115,39 @@ class DocFile extends DocAbstract {
 		$this->constants = DocConstant::fromReflector( $file->getConstants() );
 
 		if ( ! empty( $file->uses ) && ! empty( $file->uses['hooks'] ) ) {
-			$this->hooks 	 = $this->exporter->export_hooks( $file->uses['hooks'] );
+			$this->hooks = DocHookFactory::fromHooks( $file->uses['hooks'] );
 		}
 
 		$this->functions = DocCallableFactory::fromFunctions( $file->getFunctions() );
 		$this->classes 	 = DocClassFactory::fromClasses( $file->getClasses() );
 	}
 
+	/**
+	 * Converts DocFile to an array.
+	 *
+	 * @return array The array version of the object.
+	 */
 	public function toArray() {
-		$out = [
-			'file' => $this->docblock,
-			'path' => $this->relativePath,
-			'root' => $this->root,
-		];
+		$out = array(
+			'file'   => $this->docblock,
+			'path'   => $this->relativePath,
+			'root'   => $this->root,
+			'plugin' => $this->plugin->getName(),
+		);
 
 		if ( ! empty( $this->uses ) ) {
-			$out['uses'] = $this->uses;
+			$out['uses']  = $this->uses;
 		}
 
-		$out['includes'] = array_map( function( $include ) { return $include->toArray(); }, $this->includes );
+		$out['includes']  = array_map( function( $include ) { return $include->toArray(); }, $this->includes );
 		$out['constants'] = array_map( function( $constant ) { return $constant->toArray(); }, $this->constants );
 
 		if ( ! empty( $this->hooks ) ) {
-			$out['hooks'] = $this->hooks;
+			$out['hooks'] = array_map( function( $hook ) { return $hook->toArray(); }, $this->hooks );
 		}
 
 		$out['functions'] = array_map( function( $function ) { return $function->toArray(); }, $this->functions );
-		$out['classes'] = array_map( function( $class ) { return $class->toArray(); }, $this->classes );
+		$out['classes']   = array_map( function( $class ) { return $class->toArray(); }, $this->classes );
 
 		return $out;
 	}

@@ -47,24 +47,24 @@ class DocCallable {
 	 *
 	 * @param string $name
 	 * @param string $namespace
-	 * @param array $aliases
-	 * @param int $line
-	 * @param int $end_line
+	 * @param array  $aliases
+	 * @param int    $line
+	 * @param int    $end_line
 	 * @param array  $arguments
 	 * @param array  $doc
 	 * @param array  $uses
 	 * @param array  $hooks
 	 */
-	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = [], array $hooks = [] ) {
-		$this->name = $name;
+	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = array(), array $hooks = array() ) {
+		$this->name      = $name;
 		$this->namespace = $namespace;
-		$this->aliases = $aliases;
-		$this->line = $line;
-		$this->end_line = $end_line;
+		$this->aliases   = $aliases;
+		$this->line      = $line;
+		$this->end_line  = $end_line;
 		$this->arguments = $arguments;
-		$this->doc = $doc;
-		$this->uses = $uses;
-		$this->hooks = $hooks;
+		$this->doc       = $doc;
+		$this->uses      = $uses;
+		$this->hooks     = $hooks;
 	}
 
 	/**
@@ -130,17 +130,22 @@ class DocCallable {
 		return $this->hooks;
 	}
 
+	/**
+	 * @param $callable
+	 *
+	 * @return DocCallable
+	 */
 	public static function fromReflector( $callable ) {
 		$exporter = new Exporter();
 
-		$uses = [];
+		$uses = array();
 		if ( ! empty( $callable->uses ) ) {
 			$uses = $exporter->export_uses( $callable->uses );
 		}
 
-		$hooks = [];
+		$hooks = array();
 		if ( ! empty( $callable->uses ) && ! empty( $callable->uses['hooks'] ) ) {
-			$hooks = $exporter->export_hooks( $callable->uses['hooks'] );
+			$hooks = DocHookFactory::fromHooks( $callable->uses['hooks'] );
 		}
 
 		return new self(
@@ -166,7 +171,7 @@ class DocCallable {
 			'arguments' => $this->arguments,
 			'doc' => $this->doc,
 			'uses' => $this->uses,
-			'hooks' => $this->hooks,
+			'hooks' => array_map( function( $hook ) { return $hook->toArray(); }, $this->hooks ),
 		];
 	}
 }
