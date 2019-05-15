@@ -55,4 +55,11 @@ abstract class DocAbstract {
 	 * @return mixed The parsed data.
 	 */
 	abstract protected function parse();
+
+	/**
+	 * Converts the object to an array notation.
+	 *
+	 * @return array The array notation of the object.
+	 */
+	abstract public function toArray();
 }

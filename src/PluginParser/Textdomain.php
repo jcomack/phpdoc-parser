@@ -5,10 +5,12 @@
  * @package WP_Parser\PluginParser
  */
 class Textdomain {
+
 	/**
 	 * @var string
 	 */
 	private $domain;
+
 	/**
 	 * @var string
 	 */
@@ -18,7 +20,7 @@ class Textdomain {
 	 * Textdomain constructor.
 	 *
 	 * @param string $domain The textdomain.
-	 * @param string $path The path to the textdomain.
+	 * @param string $path 	 The path to the textdomain.
 	 */
 	public function __construct( string $domain, string $path ) {
 		$this->domain = $domain;
@@ -26,14 +28,18 @@ class Textdomain {
 	}
 
 	/**
-	 * @return string
+	 * Gets the domain.
+	 *
+	 * @return string The domain.
 	 */
 	public function getDomain() {
 		return $this->domain;
 	}
 
 	/**
-	 * @return string
+	 * Gets the path.
+	 *
+	 * @return string The path.
 	 */
 	public function getPath() {
 		return $this->path;

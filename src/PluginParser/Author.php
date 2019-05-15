@@ -5,10 +5,12 @@
  * @package WP_Parser\PluginParser
  */
 class Author {
+
 	/**
 	 * @var string
 	 */
 	private $name;
+
 	/**
 	 * @var string
 	 */
@@ -17,8 +19,8 @@ class Author {
 	/**
 	 * Author constructor.
 	 *
-	 * @param string $name
-	 * @param string $uri
+	 * @param string $name The name of the author.
+	 * @param string $uri  The URI of the author.
 	 */
 	public function __construct( string $name, string $uri ) {
 		$this->name = $name;
@@ -26,14 +28,18 @@ class Author {
 	}
 
 	/**
-	 * @return string
+	 * Gets the name of the author.
+	 *
+	 * @return string The name of the author.
 	 */
 	public function getName() {
 		return $this->name;
 	}
 
 	/**
-	 * @return string
+	 * Gets the URI of the author.
+	 *
+	 * @return string The URI of the author.
 	 */
 	public function getUri() {
 		return $this->uri;

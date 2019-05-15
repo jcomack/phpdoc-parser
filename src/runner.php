@@ -10,17 +10,29 @@ use WP_Parser\PluginParser\PluginInterface;
  * @package WP_Parser
  */
 class Runner {
+
+	/**
+	 * @var Exporter
+	 */
 	private $exporter;
+
+	/**
+	 * @var PluginInterface
+	 */
 	private $plugin;
+
+	/**
+	 * @var string
+	 */
 	private $directory;
 
 	/**
 	 * Runner constructor.
 	 *
-	 * @param                 $directory
-	 * @param PluginInterface $plugin
+	 * @param string 		  $directory The directory in which the runner should run.
+	 * @param PluginInterface $plugin	 The plugin associated with the code.
 	 */
-	public function __construct( $directory, PluginInterface $plugin ) {
+	public function __construct( string $directory, PluginInterface $plugin ) {
 		$this->exporter = new Exporter();
 
 		$this->directory = $directory;
@@ -35,7 +47,7 @@ class Runner {
 	 * @return array The extracted docblocks.
 	 */
 	public function parse_files( Finder $files ) {
-		$parsed_files = DocFileFactory::fromFiles( $files, $this->directory, $this->plugin );
+		$parsed_files = DocPartFactory::fromFiles( $files, $this->directory, $this->plugin );
 
 		return array_map( function( $file ) { return $file->toArray(); }, $parsed_files );
 	}

@@ -32,10 +32,18 @@ class Parser {
 		'title',
 	);
 
+	/**
+	 * Parser constructor.
+	 */
 	public function __construct() {
 		$this->relationships = new Relationships();
 	}
 
+	/**
+	 * Sets up the parser code.
+	 *
+	 * @return void
+	 */
 	public function on_load() {
 
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
@@ -51,12 +59,13 @@ class Parser {
 	}
 
 	/**
-	 * Register the function and class post types
+	 * Register the function and class post types.
+	 *
+	 * @return void
 	 */
 	public function register_post_types() {
 
 		if ( ! post_type_exists( 'wp-parser-function' ) ) {
-
 			register_post_type(
 				'wp-parser-function',
 				array(
@@ -74,8 +83,6 @@ class Parser {
 		}
 
 		if ( ! post_type_exists( 'wp-parser-method' ) ) {
-//			add_rewrite_rule( 'method/([^/]+)/([^/]+)/?$', 'index.php?post_type=wp-parser-method&name=$matches[1]-$matches[2]', 'top' );
-
 			register_post_type(
 				'wp-parser-method',
 				array(
@@ -87,14 +94,13 @@ class Parser {
 						'slug'       => 'method',
 						'with_front' => false,
 					),
-					'supports'    => $this->post_type_support,
+					'supports' => $this->post_type_support,
 				)
 			);
 		}
 
 
 		if ( ! post_type_exists( 'wp-parser-class' ) ) {
-
 			register_post_type(
 				'wp-parser-class',
 				array(
@@ -112,7 +118,6 @@ class Parser {
 		}
 
 		if ( ! post_type_exists( 'wp-parser-hook' ) ) {
-
 			register_post_type(
 				'wp-parser-hook',
 				array(
@@ -131,12 +136,12 @@ class Parser {
 	}
 
 	/**
-	 * Register the file and @since taxonomies
+	 * Register the file and @since taxonomies.
+	 *
+	 * @return void
 	 */
 	public function register_taxonomies() {
-
 		if ( ! taxonomy_exists( 'wp-parser-source-file' ) ) {
-
 			register_taxonomy(
 				'wp-parser-source-file',
 				$this->taxonomy_object_types,
@@ -151,7 +156,6 @@ class Parser {
 		}
 
 		if ( ! taxonomy_exists( 'wp-parser-package' ) ) {
-
 			register_taxonomy(
 				'wp-parser-package',
 				$this->taxonomy_object_types,
@@ -167,7 +171,6 @@ class Parser {
 		}
 
 		if ( ! taxonomy_exists( 'wp-parser-since' ) ) {
-
 			register_taxonomy(
 				'wp-parser-since',
 				$this->taxonomy_object_types,
@@ -183,7 +186,6 @@ class Parser {
 		}
 
 		if ( ! taxonomy_exists( 'wp-parser-namespace' ) ) {
-
 			register_taxonomy(
 				'wp-parser-namespace',
 				$this->taxonomy_object_types,
@@ -199,7 +201,6 @@ class Parser {
 		}
 
 		if ( ! taxonomy_exists( 'wp-parser-plugin' ) ) {
-
 			register_taxonomy(
 				'wp-parser-plugin',
 				$this->taxonomy_object_types,
@@ -216,10 +217,12 @@ class Parser {
 	}
 
 	/**
-	 * @param string   $link
-	 * @param \WP_Post $post
+	 * Gets the method permalink.
 	 *
-	 * @return string|void
+	 * @param string   $link The current link to fallback on.
+	 * @param \WP_Post $post The post to base the link on.
+	 *
+	 * @return string The method permalink.
 	 */
 	public function method_permalink( $link, $post ) {
 
@@ -233,23 +236,24 @@ class Parser {
 	}
 
 	/**
-	 * Raw phpDoc could potentially introduce unsafe markup into the HTML, so we sanitise it here.
+	 * Sanitizes raw phpDoc that could potentially introduce unsafe markup into the HTML.
 	 *
-	 * @param array $args Parameter arguments to make safe
+	 * @param array $args Parameter arguments to make safe.
 	 *
-	 * @return array
+	 * @return array The sanitized parameter arguments.
 	 */
 	public function make_args_safe( $args ) {
-
 		array_walk_recursive( $args, array( $this, 'sanitize_argument' ) );
 
 		return apply_filters( 'wp_parser_make_args_safe', $args );
 	}
 
 	/**
-	 * @param mixed $value
+	 * Sanitizes the passed argument.
 	 *
-	 * @return mixed
+	 * @param mixed $value The value to sanitize.
+	 *
+	 * @return mixed The sanitized argument.
 	 */
 	public function sanitize_argument( &$value ) {
 
@@ -271,11 +275,11 @@ class Parser {
 	}
 
 	/**
-	 * Replace separators with a more readable version
+	 * Replaces separators with a more readable version.
 	 *
-	 * @param string $type Variable type
+	 * @param string $type The variable type.
 	 *
-	 * @return string
+	 * @return string The humanized separator.
 	 */
 	public function humanize_separator( $type ) {
 		return str_replace( '|', '<span class="wp-parser-item-type-or">' . _x( ' or ', 'separator', 'wp-parser' ) . '</span>', $type );

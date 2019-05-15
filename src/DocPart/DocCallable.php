@@ -1,42 +1,53 @@
 <?php namespace WP_Parser;
 
+use phpDocumentor\Reflection\ClassReflector\MethodReflector;
+use WP_Parser\DocPart\DocPart;
+
 /**
  * Class DocCallable
  * @package WP_Parser
  */
-class DocCallable {
+class DocCallable implements DocPart {
 	/**
 	 * @var string
 	 */
 	private $name;
+
 	/**
 	 * @var string
 	 */
 	private $namespace;
+
 	/**
-	 * @var string
+	 * @var array
 	 */
 	private $aliases;
+
 	/**
-	 * @var string
+	 * @var int
 	 */
 	private $line;
+
 	/**
-	 * @var string
+	 * @var int
 	 */
 	private $end_line;
+
 	/**
 	 * @var array
 	 */
 	private $arguments;
+
 	/**
 	 * @var array
 	 */
 	private $doc;
+
 	/**
 	 * @var array
 	 */
 	private $uses;
+
 	/**
 	 * @var array
 	 */
@@ -45,15 +56,15 @@ class DocCallable {
 	/**
 	 * DocCallable constructor.
 	 *
-	 * @param string $name
-	 * @param string $namespace
-	 * @param array  $aliases
-	 * @param int    $line
-	 * @param int    $end_line
-	 * @param array  $arguments
-	 * @param array  $doc
-	 * @param array  $uses
-	 * @param array  $hooks
+	 * @param string $name		The name of the callable.
+	 * @param string $namespace The namespace of the callable.
+	 * @param array  $aliases	The aliases for the callable.
+	 * @param int    $line		The line on which the callable's code starts.
+	 * @param int    $end_line	The line on which the calleble's code ends.
+	 * @param array  $arguments	The arguments passed to the callable.
+	 * @param array  $doc		The documentation of the callable.
+	 * @param array  $uses		Other callables that are used by this callable.
+	 * @param array  $hooks		The hooks available in the callable.
 	 */
 	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = array(), array $hooks = array() ) {
 		$this->name      = $name;
@@ -68,72 +79,92 @@ class DocCallable {
 	}
 
 	/**
-	 * @return string
+	 * Gets the name.
+	 *
+	 * @return string The name of the callable.
 	 */
 	public function getName() {
 		return $this->name;
 	}
 
 	/**
-	 * @return string
+	 * Gets the namespace.
+	 *
+	 * @return string The namespace of the callable.
 	 */
 	public function getNamespace() {
 		return $this->namespace;
 	}
 
 	/**
-	 * @return string
+	 * Gets the aliases.
+	 *
+	 * @return array The aliases of the callable.
 	 */
 	public function getAliases() {
 		return $this->aliases;
 	}
 
 	/**
-	 * @return string
+	 * Gets the line that the callable starts on.
+	 *
+	 * @return int The starting line of the callable.
 	 */
 	public function getLine() {
 		return $this->line;
 	}
 
 	/**
-	 * @return string
+	 * Gets the line that the callable ends on.
+	 *
+	 * @return int The ending line of the callable.
 	 */
 	public function getEndLine() {
 		return $this->end_line;
 	}
 
 	/**
-	 * @return array
+	 * Gets the arguments.
+	 *
+	 * @return array The arguments of the callable.
 	 */
 	public function getArguments() {
 		return $this->arguments;
 	}
 
 	/**
-	 * @return array
+	 * Gets the documentation.
+	 *
+	 * @return array The documentation of the callable.
 	 */
 	public function getDoc() {
 		return $this->doc;
 	}
 
 	/**
-	 * @return array
+	 * Gets the uses.
+	 *
+	 * @return array The uses of the callable.
 	 */
 	public function getUses() {
 		return $this->uses;
 	}
 
 	/**
-	 * @return array
+	 * Gets the hooks.
+	 *
+	 * @return array The hooks of the callable.
 	 */
 	public function getHooks() {
 		return $this->hooks;
 	}
 
 	/**
-	 * @param $callable
+	 * Creates a callable from the reflector.
 	 *
-	 * @return DocCallable
+	 * @param FunctionReflector|MethodReflector $callable The callable reflector to convert.
+	 *
+	 * @return DocCallable The callable instance.
 	 */
 	public static function fromReflector( $callable ) {
 		$exporter = new Exporter();
@@ -145,7 +176,7 @@ class DocCallable {
 
 		$hooks = array();
 		if ( ! empty( $callable->uses ) && ! empty( $callable->uses['hooks'] ) ) {
-			$hooks = DocHookFactory::fromHooks( $callable->uses['hooks'] );
+			$hooks = DocPartFactory::fromHooks( $callable->uses['hooks'] );
 		}
 
 		return new self(
@@ -161,8 +192,13 @@ class DocCallable {
 		);
 	}
 
+	/**
+	 * Converts the object to an array notation.
+	 *
+	 * @return array The array notation of the object.
+	 */
 	public function toArray() {
-		return [
+		return array(
 			'name' => $this->name,
 			'namespace' => $this->namespace,
 			'aliases' => $this->aliases,
@@ -172,6 +208,6 @@ class DocCallable {
 			'doc' => $this->doc,
 			'uses' => $this->uses,
 			'hooks' => array_map( function( $hook ) { return $hook->toArray(); }, $this->hooks ),
-		];
+		);
 	}
 }

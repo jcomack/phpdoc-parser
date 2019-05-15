@@ -136,9 +136,11 @@ class Importer {
 	/**
 	 * Import the PHPDoc $data into WordPress posts and taxonomies
 	 *
-	 * @param array $files
+	 * @param array $files					  The files to import.
 	 * @param bool  $skip_sleep               Optional; defaults to false. If true, the sleep() calls are skipped.
 	 * @param bool  $import_ignored_functions Optional; defaults to false. If true, functions marked `@ignore` will be imported.
+	 *
+	 * @return void
 	 */
 	public function import( array $files, $skip_sleep = false, $import_ignored_functions = false ) {
 		global $wpdb;
@@ -244,6 +246,11 @@ class Importer {
 		}
 	}
 
+	/**
+	 * Logs the last import.
+	 *
+	 * @return void
+	 */
 	protected function log_last_import() {
 		$last_import = time();
 		$import_date = date_i18n( get_option('date_format'), $last_import );
@@ -289,6 +296,8 @@ class Importer {
 	 * @param array $file
 	 * @param bool  $skip_sleep     Optional; defaults to false. If true, the sleep() calls are skipped.
 	 * @param bool  $import_ignored Optional; defaults to false. If true, functions and classes marked `@ignore` will be imported.
+	 *
+	 * @return void
 	 */
 	public function import_file( array $file, $skip_sleep = false, $import_ignored = false ) {
 		if ( ! isset( $this->plugin_name ) || $this->plugin_name !== $file['plugin'] ) {
@@ -300,8 +309,8 @@ class Importer {
 		 *
 		 * Returning a falsey value to the filter will short-circuit processing of the import file.
 		 *
-		 * @param bool  $display         Whether to proceed with importing the file. Default true.
-		 * @param array $file            File data
+		 * @param bool  $display Whether to proceed with importing the file. Defaults to true.
+		 * @param array $file   The file data.
 		 */
 		if ( ! apply_filters( 'wp_parser_pre_import_file', true, $file ) ) {
 			$this->logger->info( sprintf( 'Skipping file "%s".', $file['path'] ), 1 );
@@ -389,9 +398,9 @@ class Importer {
 	}
 
 	/**
-	 * Create a post for a function
+	 * Create a post for a function.
 	 *
-	 * @param array $data           Function.
+	 * @param array $data           The function data.
 	 * @param int   $parent_post_id Optional; post ID of the parent (class or function) this item belongs to. Defaults to zero (no parent).
 	 * @param bool  $import_ignored Optional; defaults to false. If true, functions marked `@ignore` will be imported.
 	 *
@@ -408,7 +417,7 @@ class Importer {
 	/**
 	 * Create a post for a hook
 	 *
-	 * @param array $data           Hook.
+	 * @param array $data           The hook data.
 	 * @param int   $parent_post_id Optional; post ID of the parent (function) this item belongs to. Defaults to zero (no parent).
 	 * @param bool  $import_ignored Optional; defaults to false. If true, hooks marked `@ignore` will be imported.
 	 *
@@ -456,8 +465,9 @@ class Importer {
 	/**
 	 * Create a post for a class
 	 *
-	 * @param array $data           Class.
+	 * @param array $data           The class data.
 	 * @param bool  $import_ignored Optional; defaults to false. If true, functions marked `@ignore` will be imported.
+	 *
 	 * @return bool|int Post ID of this function, false if any failure.
 	 */
 	protected function import_class( array $data, $import_ignored = false ) {
@@ -489,11 +499,10 @@ class Importer {
 	/**
 	 * Create a post for a class method.
 	 *
-	 * @param array $data           Method.
-	 * @param int   $parent_post_id Optional; post ID of the parent (class) this
-	 *                              method belongs to. Defaults to zero (no parent).
-	 * @param bool  $import_ignored Optional; defaults to false. If true, functions
-	 *                              marked `@ignore` will be imported.
+	 * @param array $data           The method data.
+	 * @param int   $parent_post_id Post ID of the parent (class) this method belongs to.
+	 * @param bool  $import_ignored Defaults to false. If true, functions marked `@ignore` will be imported.
+	 *
 	 * @return bool|int Post ID of this function, false if any failure.
 	 */
 	protected function import_method( array $data, $parent_post_id = 0, $import_ignored = false ) {
@@ -524,7 +533,9 @@ class Importer {
 	/**
 	 * Updates the 'wp_parser_imported_wp_version' option with the version from wp-includes/version.php.
 	 *
-	 * @param array   $data Data
+	 * @param array   $data The data to extract the version from.
+	 *
+	 * @return void
 	 */
 	protected function import_version( $data ) {
 
@@ -542,6 +553,13 @@ class Importer {
 		}
 	}
 
+	/**
+	 * Gets the namespace.
+	 *
+	 * @param array $data The dataset to get the namespace from.
+	 *
+	 * @return string The namespace.
+	 */
 	private function get_namespace( $data ) {
 		if ( empty( $data['namespace'] ) || $data['namespace'] === 'global' ) {
 			return $data['name'];
@@ -550,10 +568,27 @@ class Importer {
 		return $data['namespace'] . '\\' . $data['name'];
 	}
 
+	/**
+	 * Gets the slug from the namespace.
+	 *
+	 * @param string $namespace The namespace to get the slug from.
+	 *
+	 * @return string The slug.
+	 */
 	private function get_slug_from_namespace( $namespace ) {
 		return sanitize_title( str_replace( '\\', '-', str_replace( '::', '-', $namespace ) ) );
 	}
 
+	/**
+	 * Gets the ID of the post that exists with the passed slug and post type.
+	 * Additionally can be limited by the parent ID.
+	 *
+	 * @param     $slug		 The slug of the post to search for.
+	 * @param     $post_type The post type to search for.
+	 * @param int $parent_id The parent id.
+	 *
+	 * @return int The post ID.
+	 */
 	protected function get_existing_item( $slug, $post_type, $parent_id = 0 ) {
 		/** @var \wpdb $wpdb */
 		global $wpdb;
@@ -842,8 +877,10 @@ class Importer {
 	 * This creates terms for each of the namespace terms in a hierachical tree
 	 * and then adds the item being processed to each of the terms in that tree.
 	 *
-	 * @param int   $post_id    The ID of the post item being processed.
-	 * @param array $data		The data.
+	 * @param int   $post_id The ID of the post item being processed.
+	 * @param array $data	 The data.
+	 *
+	 * @return void
 	 */
 	protected function _set_namespaces( $post_id, $data ) {
 		$ns_term  = false;
@@ -882,6 +919,13 @@ class Importer {
 		}
 	}
 
+	/**
+	 * Gets the plugin terms associated with the post.
+	 *
+	 * @param int $post_id The post ID.
+	 *
+	 * @return array The plugin terms.
+	 */
 	protected function get_plugin_terms_for_post( $post_id ) {
 		return array_map(
 			function( $term ) {
@@ -891,6 +935,13 @@ class Importer {
 		);
 	}
 
+	/**
+	 * Checks if there's a potential duplicate entry, based on the post ID.
+	 *
+	 * @param array $post_data The post data to check.
+	 *
+	 * @return bool Whether or not there are potential duplicates.
+	 */
 	protected function check_for_potential_duplicates( $post_data ) {
 		$associated_terms = $this->get_plugin_terms_for_post( $post_data['ID'] );
 
@@ -906,15 +957,27 @@ class Importer {
 	}
 
 	/**
-	 * @param $post_data
-	 * @param $existing_post_id
+	 * Determines whether the post needs updating based on the changes found.
 	 *
-	 * @return array
+	 * @param array $post_data			The post data from the current item.
+	 * @param int   $existing_post_id	The post ID known in the database.
+	 *
+	 * @return array The difference in data between the current post and the one in the database.
 	 */
 	protected function post_needs_update( $post_data, $existing_post_id ) {
 		return array_diff_assoc( sanitize_post( $post_data, 'db' ), get_post( $existing_post_id, ARRAY_A, 'db' ) );
 	}
 
+	/**
+	 * Logs error messages related to the insertion or updating of a particular post.
+	 *
+	 * @param string $type		  The type.
+	 * @param string $namespace	  The namespace.
+	 * @param int 	 $post_id 	  The post ID.
+	 * @param int 	 $indentation The amount of indentation to use.
+	 *
+	 * @return void
+	 */
 	protected function log_error_message( $type, $namespace, $post_id, $indentation = 1 ) {
 		$this->logger->stash_error(
 			sprintf(
@@ -926,6 +989,14 @@ class Importer {
 		);
 	}
 
+	/**
+	 * Sets the @since versions for the post based on the passed tag data.
+	 *
+	 * @param int 	$post_id The post ID.
+	 * @param array $tags	 The tag data to extract the since data from.
+	 *
+	 * @return array The set data.
+	 */
 	protected function set_since_versions( $post_id, $tags ) {
 		$since_versions = wp_list_filter( $tags, array( 'name' => 'since' ) );
 		$anything_updated = array();
@@ -961,6 +1032,14 @@ class Importer {
 		return $anything_updated;
 	}
 
+	/**
+	 * Sets the packages for the post based on the passed tag data.
+	 *
+	 * @param int 	$post_id The post ID.
+	 * @param array $tags	 The tag data to extract the package data from.
+	 *
+	 * @return array The set data.
+	 */
 	protected function set_packages( $post_id, $tags ) {
 		$anything_updated = array();
 
@@ -1026,6 +1105,14 @@ class Importer {
 		return $anything_updated;
 	}
 
+	/**
+	 * Assign additional plugin taxonomies to the passed post.
+	 *
+	 * @param int 	 $post_id The post ID.
+	 * @param string $plugin  The plugin to assign to the post.
+	 *
+	 * @return array The term ID's that were set.
+	 */
 	protected function assign_additional_plugin( $post_id, $plugin ) {
 		$this->insert_term( $plugin, $this->taxonomy_plugin );
 

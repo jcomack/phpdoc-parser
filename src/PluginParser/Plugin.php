@@ -5,30 +5,37 @@
  * @package WP_Parser\PluginParser
  */
 class Plugin implements PluginInterface {
+
 	/**
-	 * @var string|string
+	 * @var string
 	 */
 	private $name;
+
 	/**
-	 * @var string|string
+	 * @var string
 	 */
 	private $uri;
+
 	/**
-	 * @var string|string
+	 * @var string
 	 */
 	private $version;
+
 	/**
-	 * @var string|string
+	 * @var string
 	 */
 	private $description;
+
 	/**
 	 * @var Author
 	 */
 	private $author;
+
 	/**
 	 * @var Textdomain
 	 */
 	private $textdomain;
+
 	/**
 	 * @var bool
 	 */
@@ -37,82 +44,100 @@ class Plugin implements PluginInterface {
 	/**
 	 * Plugin constructor.
 	 *
-	 * @param string $name
-	 * @param string $uri
-	 * @param string $version
-	 * @param string $description
-	 * @param Author $author
-	 * @param Textdomain $textdomain
-	 * @param bool   $network
+	 * @param string 	 $name			The name of the plugin.
+	 * @param string 	 $uri			The URI of the plugin.
+	 * @param string 	 $version		The version of the plugin.
+	 * @param string 	 $description	The description of the plugin.
+	 * @param Author 	 $author		The author of the plugin.
+	 * @param Textdomain $textdomain	The textdomain used by the plugin.
+	 * @param bool   	 $network		Whether or not the plugin is network activated.
 	 */
-	public function __construct( string $name, string $uri, string $version, string $description, Author $author, Textdomain $textdomain, $network = false ) {
-		$this->name = $name;
-		$this->uri = $uri;
-		$this->version = $version;
+	public function __construct( string $name, string $uri, string $version, string $description, Author $author, Textdomain $textdomain, bool $network = false ) {
+		$this->name        = $name;
+		$this->uri         = $uri;
+		$this->version     = $version;
 		$this->description = $description;
-		$this->author = $author;
-		$this->textdomain = $textdomain;
-		$this->network = $network;
+		$this->author      = $author;
+		$this->textdomain  = $textdomain;
+		$this->network     = $network;
 	}
 
 	/**
-	 * @return string
+	 * Gets the name.
+	 *
+	 * @return string The name of the plugin.
 	 */
 	public function getName() {
 		return $this->name;
 	}
 
 	/**
-	 * @return string
+	 * Gets the URI.
+	 *
+	 * @return string The URI of the plugin.
 	 */
 	public function getUri() {
 		return $this->uri;
 	}
 
 	/**
-	 * @return string
+	 * Gets the version.
+	 *
+	 * @return string The version of the plugin.
 	 */
 	public function getVersion() {
 		return $this->version;
 	}
 
 	/**
-	 * @return string
+	 * Gets the description.
+	 *
+	 * @return string The description of the plugin.
 	 */
 	public function getDescription() {
 		return $this->description;
 	}
 
 	/**
-	 * @return Author
+	 * Gets the author's name.
+	 *
+	 * @return string The author's name.
 	 */
 	public function getAuthor() {
 		return $this->author->getName();
 	}
 
 	/**
-	 * @return Author
+	 * Gets the author's URI.
+	 *
+	 * @return string The author's URI.
 	 */
 	public function getAuthorURI() {
 		return $this->author->getUri();
 	}
 
 	/**
-	 * @return Textdomain
+	 * Gets the textdomain.
+	 *
+	 * @return string The textdomain of the plugin.
 	 */
 	public function getTextdomain() {
 		return $this->textdomain->getDomain();
 	}
 
 	/**
-	 * @return Textdomain
+	 * Gets the textdomain's path.
+	 *
+	 * @return string The path for the textdomain of the plugin.
 	 */
 	public function getTextdomainPath() {
 		return $this->textdomain->getPath();
 	}
 
 	/**
-	 * @return bool
+	 * Determines whether or not the plugin is network activated.
+	 *
+	 * @return bool Whether or not the plugin is network activated.
 	 */
 	public function isNetwork() {
 		return $this->network;

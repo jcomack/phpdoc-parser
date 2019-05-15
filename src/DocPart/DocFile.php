@@ -5,7 +5,7 @@ use phpDocumentor\Reflection\Exception\UnreadableFile;
 use Symfony\Component\Finder\SplFileInfo;
 use WP_Parser\DocCallableFactory;
 use WP_Parser\DocClassFactory;
-use WP_Parser\DocHookFactory;
+use WP_Parser\DocPartFactory;
 use WP_Parser\Exporter;
 use WP_Parser\File_Reflector;
 use WP_Parser\PluginParser\PluginInterface;
@@ -115,17 +115,17 @@ class DocFile extends DocAbstract {
 		$this->constants = DocConstant::fromReflector( $file->getConstants() );
 
 		if ( ! empty( $file->uses ) && ! empty( $file->uses['hooks'] ) ) {
-			$this->hooks = DocHookFactory::fromHooks( $file->uses['hooks'] );
+			$this->hooks = DocPartFactory::fromHooks( $file->uses['hooks'] );
 		}
 
-		$this->functions = DocCallableFactory::fromFunctions( $file->getFunctions() );
-		$this->classes 	 = DocClassFactory::fromClasses( $file->getClasses() );
+		$this->functions = DocPartFactory::fromFunctions( $file->getFunctions() );
+		$this->classes 	 = DocPartFactory::fromClasses( $file->getClasses() );
 	}
 
 	/**
-	 * Converts DocFile to an array.
+	 * Converts the object to an array notation.
 	 *
-	 * @return array The array version of the object.
+	 * @return array The array notation of the object.
 	 */
 	public function toArray() {
 		$out = array(
