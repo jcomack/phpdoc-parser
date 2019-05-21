@@ -57,7 +57,7 @@ class DocCallable implements DocPart {
 	 * DocCallable constructor.
 	 *
 	 * @param string $name		The name of the callable.
-	 * @param string $namespace The namespace of the callable.
+	 * @param string $namespace	The namespace of the callable.
 	 * @param array  $aliases	The aliases for the callable.
 	 * @param int    $line		The line on which the callable's code starts.
 	 * @param int    $end_line	The line on which the calleble's code ends.
