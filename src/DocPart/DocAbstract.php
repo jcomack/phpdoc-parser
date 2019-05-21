@@ -45,7 +45,7 @@ abstract class DocAbstract {
 		$this->filename		= $file->getFilename();
 		$this->fullPath		= $file->getPathname();
 		$this->relativePath	= $file->getRelativePathname();
-		$this->root			= $root;
+		$this->root 		= $root;
 		$this->plugin		= $plugin;
 	}
 
