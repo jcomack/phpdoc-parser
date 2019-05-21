@@ -42,10 +42,10 @@ abstract class DocAbstract {
 	 * @param PluginInterface $plugin The plugin data collector.
 	 */
 	public function __construct( SplFileInfo $file, $root, PluginInterface $plugin ) {
-		$this->filename     = $file->getFilename();
-		$this->fullPath 	= $file->getPathname();
-		$this->relativePath = $file->getRelativePathname();
-		$this->root         = $root;
+		$this->filename		= $file->getFilename();
+		$this->fullPath		= $file->getPathname();
+		$this->relativePath	= $file->getRelativePathname();
+		$this->root			= $root;
 		$this->plugin		= $plugin;
 	}
 
