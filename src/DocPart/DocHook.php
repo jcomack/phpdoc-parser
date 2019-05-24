@@ -83,13 +83,13 @@ class DocHook implements DocPart {
 	 * @return array The array notation of the object.
 	 */
 	public function toArray() {
-		return array(
+		return [
 			'name' => $this->name,
 			'line' => $this->line,
 			'end_line' => $this->end_line,
 			'type' => $this->type,
 			'arguments' => $this->arguments,
 			'doc' => $this->doc,
-		);
+		];
 	}
 }

@@ -66,7 +66,7 @@ class DocCallable implements DocPart {
 	 * @param array  $uses		Other callables that are used by this callable.
 	 * @param array  $hooks		The hooks available in the callable.
 	 */
-	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = array(), array $hooks = array() ) {
+	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = [], array $hooks = [] ) {
 		$this->name      = $name;
 		$this->namespace = $namespace;
 		$this->aliases   = $aliases;
@@ -169,12 +169,12 @@ class DocCallable implements DocPart {
 	public static function fromReflector( $callable ) {
 		$exporter = new Exporter();
 
-		$uses = array();
+		$uses = [];
 		if ( ! empty( $callable->uses ) ) {
 			$uses = $exporter->export_uses( $callable->uses );
 		}
 
-		$hooks = array();
+		$hooks = [];
 		if ( ! empty( $callable->uses ) && ! empty( $callable->uses['hooks'] ) ) {
 			$hooks = DocPartFactory::fromHooks( $callable->uses['hooks'] );
 		}
@@ -198,7 +198,7 @@ class DocCallable implements DocPart {
 	 * @return array The array notation of the object.
 	 */
 	public function toArray() {
-		return array(
+		return [
 			'name' => $this->name,
 			'namespace' => $this->namespace,
 			'aliases' => $this->aliases,
@@ -208,6 +208,6 @@ class DocCallable implements DocPart {
 			'doc' => $this->doc,
 			'uses' => $this->uses,
 			'hooks' => array_map( function( $hook ) { return $hook->toArray(); }, $this->hooks ),
-		);
+		];
 	}
 }

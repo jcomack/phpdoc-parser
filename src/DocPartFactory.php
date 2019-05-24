@@ -19,13 +19,13 @@ class DocPartFactory {
 	/**
 	 * @var array
 	 */
-	private static $valid_part_types = array(
+	private static $valid_part_types = [
 		DocClass::class,
 		DocConstant::class,
 		DocHook::class,
 		DocFunction::class,
 		DocMethod::class,
-	);
+	];
 
 	/**
 	 * Converts files to their DocFile counterparts.
@@ -50,9 +50,6 @@ class DocPartFactory {
 	 * @return array The DocClass objects.
 	 */
 	public static function fromClasses( $classes ) {
-
-		var_dump(self::convertToType( $classes, DocClass::class ));die;
-
 		return self::convertToType( $classes, DocClass::class );
 	}
 

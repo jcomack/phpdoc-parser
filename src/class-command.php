@@ -2,10 +2,9 @@
 
 namespace WP_Parser;
 
-use phpDocumentor\Reflection\Exception\UnparsableFile;
-use phpDocumentor\Reflection\Exception\UnreadableFile;
 use WP_CLI;
 use WP_CLI_Command;
+use WP_Error;
 
 // Temporary toggle until we figure out what's going wrong with the plugins taxonomy.
 const USE_PLUGIN_PREFIX = false;
@@ -26,7 +25,7 @@ class Command extends WP_CLI_Command {
 	public function export( $args, $assoc_args ) {
 		$directory    = realpath( $args[0] );
 		$output_file  = empty( $args[1] ) ? 'phpdoc.json' : $args[1];
-		$ignore_files = empty( $assoc_args['ignore_files'] ) ? array() : explode( ',', $assoc_args['ignore_files'] );
+		$ignore_files = empty( $assoc_args['ignore_files'] ) ? [] : explode( ',', $assoc_args['ignore_files'] );
 
 		$json        = $this->_get_phpdoc_data( $directory, 'json', $ignore_files );
 		$result      = file_put_contents( $output_file, $json );
@@ -83,14 +82,11 @@ class Command extends WP_CLI_Command {
 	 *
 	 * @param array $args       The arguments to pass to the command.
 	 * @param array $assoc_args The associated arguments to pass to the command.
-	 *
-	 * @throws UnparsableFile
-	 * @throws UnreadableFile
 	 */
 	public function create( $args, $assoc_args ) {
 		list( $directory ) = $args;
 		$directory = realpath( $directory );
-		$ignore_files = empty( $assoc_args['ignore_files'] ) ? array() : explode( ',', $assoc_args['ignore_files'] );
+		$ignore_files = empty( $assoc_args['ignore_files'] ) ? [] : explode( ',', $assoc_args['ignore_files'] );
 
 		if ( empty( $directory ) ) {
 			WP_CLI::error( sprintf( "Can't read %1\$s. Does the file exist?", $directory ) );
@@ -114,7 +110,7 @@ class Command extends WP_CLI_Command {
 	 *
 	 * @return string|array
 	 */
-	protected function _get_phpdoc_data( $path, $format = 'json', $ignore_files = array() ) {
+	protected function _get_phpdoc_data( $path, $format = 'json', $ignore_files = [] ) {
 		$ignore_files = ! empty( $ignore_files ) ? $ignore_files : [ 'vendor', 'vendor_prefixed', 'node_modules', 'tests', 'build' ];
 
 		WP_CLI::line( sprintf( 'Extracting PHPDoc from %1$s. This may take a few minutes...', $path ) );
@@ -124,7 +120,7 @@ class Command extends WP_CLI_Command {
 		$files   = $is_file ? [ $path ] : Utils::get_files( $path, $ignore_files );
 		$path    = $is_file ? dirname( $path ) : $path;
 
-		if ( $files instanceof \WP_Error ) {
+		if ( $files instanceof WP_Error ) {
 			WP_CLI::error( sprintf( 'Problem with %1$s: %2$s', $path, $files->get_error_message() ) );
 			exit;
 		}

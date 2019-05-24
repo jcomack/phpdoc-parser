@@ -27,24 +27,24 @@ class Exporter {
 		$docblock = $element->getDocBlock();
 
 		if ( ! $docblock ) {
-			return array(
+			return [
 				'description'      => '',
 				'long_description' => '',
-				'tags'             => array(),
-			);
+				'tags'             => [],
+			];
 		}
 
-		$output = array(
+		$output = [
 			'description'      => preg_replace( '/[\n\r]+/', ' ', $docblock->getShortDescription() ),
 			'long_description' => Formatter::fix_newlines( $docblock->getLongDescription()->getFormattedContents() ),
-			'tags'             => array(),
-		);
+			'tags'             => [],
+		];
 
 		foreach ( $docblock->getTags() as $tag ) {
-			$tag_data = array(
+			$tag_data = [
 				'name'    => $tag->getName(),
 				'content' => preg_replace( '/[\n\r]+/', ' ', Formatter::format_description( $tag->getDescription() ) ),
-			);
+			];
 
 			if ( method_exists( $tag, 'getTypes' ) ) {
 				$tag_data['types'] = $tag->getTypes();
@@ -93,14 +93,14 @@ class Exporter {
 	 * @return array The formatted arguments.
 	 */
 	public function export_arguments( array $arguments ) {
-		$output = array();
+		$output = [];
 
 		foreach ( $arguments as $argument ) {
-			$output[] = array(
+			$output[] = [
 				'name'    => $argument->getName(),
 				'default' => $argument->getDefault(),
 				'type'    => $argument->getType(),
-			);
+			];
 		}
 
 		return $output;
@@ -114,10 +114,10 @@ class Exporter {
 	 * @return array The formatted properties.
 	 */
 	public function export_properties( array $properties ) {
-		$out = array();
+		$out = [];
 
 		foreach ( $properties as $property ) {
-			$out[] = array(
+			$out[] = [
 				'name'       => $property->getName(),
 				'line'       => $property->getLineNumber(),
 				'end_line'   => $property->getNode()->getAttribute( 'endLine' ),
@@ -125,7 +125,7 @@ class Exporter {
 				'static'     => $property->isStatic(),
 				'visibility' => $property->getVisibility(),
 				'doc'        => $this->export_docblock( $property ),
-			);
+			];
 		}
 
 		return $out;
@@ -141,7 +141,7 @@ class Exporter {
 	 * @return array
 	 */
 	public function export_uses( array $uses ) {
-		$out = array();
+		$out = [];
 
 		// Ignore hooks here, they are exported separately.
 		unset( $uses['hooks'] );
@@ -207,12 +207,12 @@ class Exporter {
 	 * @return bool Whether or not the element is deprecated.
 	 */
 	protected function is_deprecated( $element ) {
-		$deprecations = array(
+		$deprecations = [
 			'_deprecated_file',
 			'_deprecated_function',
 			'_deprecated_argument',
 			'_deprecated_hook'
-		);
+		];
 
 		return in_array( $element->getName(), $deprecations, true );
 	}
@@ -227,13 +227,13 @@ class Exporter {
 	protected function get_method_information( $element ) {
 		$name = $element->getName();
 
-		return array(
+		return [
 			'name'     => $name[1],
 			'class'    => $name[0],
 			'static'   => $element->isStatic(),
 			'line'     => $element->getLineNumber(),
 			'end_line' => $element->getNode()->getAttribute( 'endLine' ),
-		);
+		];
 	}
 
 	/**
@@ -244,10 +244,10 @@ class Exporter {
 	 * @return array The function information.
 	 */
 	protected function get_function_information( $element ) {
-		return array(
+		return [
 			'name'     => $element->getName(),
 			'line'     => $element->getLineNumber(),
 			'end_line' => $element->getNode()->getAttribute( 'endLine' ),
-		);
+		];
 	}
 }

@@ -2,6 +2,8 @@
 
 namespace WP_Parser;
 
+use P2P_Query_Post;
+use P2P_Storage;
 use WP_CLI;
 
 /**
@@ -17,7 +19,7 @@ class Relationships {
 	/**
 	 * @var array Map of post slugs to post ids.
 	 */
-	public $slugs_to_ids = array();
+	public $slugs_to_ids = [];
 
 	/**
 	 * Map of how post IDs relate to one another.
@@ -34,18 +36,18 @@ class Relationships {
 	 *
 	 * @var array
 	 */
-	public $relationships = array();
+	public $relationships = [];
 
 	/**
 	 * Adds the actions.
 	 */
 	public function __construct() {
-		add_action( 'plugins_loaded', array( $this, 'require_posts_to_posts' ) );
-		add_action( 'wp_loaded', array( $this, 'register_post_relationships' ) );
+		add_action( 'plugins_loaded', [ $this, 'require_posts_to_posts' ] );
+		add_action( 'wp_loaded', [ $this, 'register_post_relationships' ] );
 
-		add_action( 'wp_parser_import_item', array( $this, 'import_item' ), 10, 3 );
-		add_action( 'wp_parser_starting_import', array( $this, 'wp_parser_starting_import' ) );
-		add_action( 'wp_parser_ending_import', array( $this, 'wp_parser_ending_import' ) );
+		add_action( 'wp_parser_import_item', [ $this, 'import_item' ], 10, 3 );
+		add_action( 'wp_parser_starting_import', [ $this, 'wp_parser_starting_import' ] );
+		add_action( 'wp_parser_ending_import', [ $this, 'wp_parser_ending_import' ] );
 	}
 
 	/**
@@ -53,10 +55,10 @@ class Relationships {
 	 */
 	public function require_posts_to_posts() {
 		// Initializes the database tables
-		\P2P_Storage::init();
+		P2P_Storage::init();
 
 		// Initializes the query mechanism
-		\P2P_Query_Post::init();
+		P2P_Query_Post::init();
 	}
 
 	/**
@@ -89,12 +91,12 @@ class Relationships {
 	 * @return void
 	 */
 	protected function register_connection( string $name, string $from, string $to, array $titles, $self_connections = false ) {
-		$connection = array(
+		$connection = [
 			'name' 	=> $name,
 			'from' 	=> $from,
 			'to' 	=> $to,
 			'title' => $titles,
-		);
+		];
 
 		if ( $self_connections === true ) {
 			$connection['self_connections'] = 'true';
@@ -111,15 +113,15 @@ class Relationships {
 		$importer = new Importer;
 
 		if ( ! $this->p2p_tables_exist() ) {
-			\P2P_Storage::init();
-			\P2P_Storage::install();
+			P2P_Storage::init();
+			P2P_Storage::install();
 		}
 
-		$this->post_types = array(
+		$this->post_types = [
 			'hook' => $importer->post_type_hook,
 			'method' => $importer->post_type_method,
 			'function' => $importer->post_type_function,
-		);
+		];
 	}
 
 	/**
@@ -149,11 +151,11 @@ class Relationships {
 		$from_type = $post_data['post_type'];
 		$this->slugs_to_ids[ $from_type ][ $post_data['post_name'] ] = $post_id;
 
-		$sub_types = array(
+		$sub_types = [
 			'function' => 'functions',
 			'method' => 'methods',
 			'hook' => 'hooks'
-		);
+		];
 
 		if ( $from_type === $this->post_types['function'] || $from_type === $this->post_types['method'] ) {
 			foreach ( $sub_types as $to => $from ) {
@@ -187,11 +189,11 @@ class Relationships {
 	/**
 	 * Adds a relation to the stack.
 	 *
-	 * @param      $post_id	  The post ID.
-	 * @param      $from	  The item to relate from.
-	 * @param      $to		  The item to relate to.
-	 * @param      $name	  The name to apply to the relationship.
-	 * @param null $namespace The namespace to add.
+	 * @param int 		  $post_id	 The post ID.
+	 * @param string	  $from	  	 The item to relate from.
+	 * @param string	  $to		 The item to relate to.
+	 * @param string	  $name		 The name to apply to the relationship.
+	 * @param null|string $namespace The namespace to add.
 	 */
 	protected function add_relationship( $post_id, $from, $to, $name, $namespace = null ) {
 		$this->relationships[ $from ][ $post_id ][ $to ][] = $this->names_to_slugs( $name, $namespace );
@@ -248,7 +250,7 @@ class Relationships {
 							foreach ( $to_slugs as $to_slug => $to_id ) {
 								$to_id = intval( $to_id, 10 );
 								if ( 0 != $to_id ) {
-									p2p_type( 'functions_to_functions' )->connect( $from_id, $to_id, array( 'date' => current_time( 'mysql' ) ) );
+									p2p_type( 'functions_to_functions' )->connect( $from_id, $to_id, [ 'date' => current_time( 'mysql' ) ] );
 								}
 							}
 						}
@@ -257,7 +259,7 @@ class Relationships {
 							foreach ( $to_slugs as $to_slug => $to_id ) {
 								$to_id = intval( $to_id, 10 );
 								if ( 0 != $to_id ) {
-									p2p_type( 'functions_to_methods' )->connect( $from_id, $to_id, array( 'date' => current_time( 'mysql' ) ) );
+									p2p_type( 'functions_to_methods' )->connect( $from_id, $to_id, [ 'date' => current_time( 'mysql' ) ] );
 								}
 							}
 						}
@@ -266,7 +268,7 @@ class Relationships {
 							foreach ( $to_slugs as $to_slug => $to_id ) {
 								$to_id = intval( $to_id, 10 );
 								if ( 0 != $to_id ) {
-									p2p_type( 'functions_to_hooks' )->connect( $from_id, $to_id, array( 'date' => current_time( 'mysql' ) ) );
+									p2p_type( 'functions_to_hooks' )->connect( $from_id, $to_id, [ 'date' => current_time( 'mysql' ) ] );
 								}
 							}
 						}
@@ -283,7 +285,7 @@ class Relationships {
 							foreach ( $to_slugs as $to_slug => $to_id ) {
 								$to_id = intval( $to_id, 10 );
 								if ( 0 != $to_id ) {
-									p2p_type( 'methods_to_functions' )->connect( $from_id, $to_id, array( 'data' => current_time( 'mysql' ) ) );
+									p2p_type( 'methods_to_functions' )->connect( $from_id, $to_id, [ 'data' => current_time( 'mysql' ) ] );
 								}
 							}
 						}
@@ -293,7 +295,7 @@ class Relationships {
 							foreach ( $to_slugs as $to_slug => $to_id ) {
 								$to_id = intval( $to_id, 10 );
 								if ( 0 != $to_id ) {
-									p2p_type( 'methods_to_methods' )->connect( $from_id, $to_id, array( 'data' => current_time( 'mysql' ) ) );
+									p2p_type( 'methods_to_methods' )->connect( $from_id, $to_id, [ 'data' => current_time( 'mysql' ) ] );
 								}
 							}
 						}
@@ -303,7 +305,7 @@ class Relationships {
 							foreach ( $to_slugs as $to_slug => $to_id ) {
 								$to_id = intval( $to_id, 10 );
 								if ( 0 != $to_id ) {
-									p2p_type( 'methods_to_hooks' )->connect( $from_id, $to_id, array( 'data' => current_time( 'mysql' ) ) );
+									p2p_type( 'methods_to_hooks' )->connect( $from_id, $to_id, [ 'data' => current_time( 'mysql' ) ] );
 								}
 							}
 						}
@@ -340,7 +342,7 @@ class Relationships {
 	public function names_to_slugs( $name, $namespace = null ) {
 		$fully_qualified = ( strpos( '\\', $name ) === 0 );
 		$name  = ltrim( $name, '\\' );
-		$names = array();
+		$names = [];
 
 		if ( $namespace && ! $fully_qualified  ) {
 			$names[] = $this->name_to_slug( $namespace . '\\' . $name );
@@ -372,7 +374,7 @@ class Relationships {
 	 * @return array
 	 */
 	public function get_ids_for_slugs( array $slugs, array $slugs_to_ids ) {
-		$slugs_with_ids = array();
+		$slugs_with_ids = [];
 
 		foreach ( $slugs as $index => $scoped_slugs ) {
 			// Find the first matching scope the ID exists for.

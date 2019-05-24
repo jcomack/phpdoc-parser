@@ -89,10 +89,10 @@ class DocInclude implements DocPart {
 	 * @return array The array notation of the object.
 	 */
 	public function toArray() {
-		return array(
+		return [
 			'name' => $this->name,
 			'line' => $this->line_number,
 			'type' => $this->type
-		);
+		];
 	}
 }

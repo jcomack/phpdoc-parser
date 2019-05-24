@@ -129,12 +129,12 @@ class DocMethod implements DocPart {
 	public function toArray() {
 		return array_merge(
 			$this->callable->toArray(),
-			array(
+			[
 				'final' 	 => $this->final,
 				'abstract' 	 => $this->abstract,
 				'static' 	 => $this->static,
 				'visibility' => $this->visibility,
-			)
+			]
 		);
 	}
 }

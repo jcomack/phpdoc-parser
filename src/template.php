@@ -7,12 +7,12 @@ namespace WP_Parser;
  */
 function the_content() {
 
-	static $post_types = array(
+	static $post_types = [
 		'wp-parser-class',
 		'wp-parser-method',
 		'wp-parser-function',
 		'wp-parser-hook',
-	);
+	];
 	$post    = get_post();
 	$content = get_the_content();
 
@@ -57,14 +57,14 @@ function the_content() {
  */
 function get_return_type() {
 	$function_data = get_post_meta( get_the_ID(), '_wp-parser_tags', true );
-	$return_type   = wp_list_filter( $function_data, array( 'name' => 'return' ) );
+	$return_type   = wp_list_filter( $function_data, [ 'name' => 'return' ] );
 
 	if ( ! empty( $return_type ) ) {
 		// Grab the description from the return type
 		$return_type = array_shift( $return_type );
 		$return_type = $return_type['types'];
 	} else {
-		$return_type = array( 'void' );
+		$return_type = [ 'void' ];
 	}
 
 	return apply_filters( 'wp_parser_return_type', $return_type );
@@ -86,7 +86,7 @@ function the_return_type() {
  */
 function get_return_desc() {
 	$function_data = get_post_meta( get_the_ID(), '_wp-parser_tags', true );
-	$return_desc   = wp_list_filter( $function_data, array( 'name' => 'return' ) );
+	$return_desc   = wp_list_filter( $function_data, [ 'name' => 'return' ] );
 
 	if ( ! empty( $return_desc ) ) {
 		// Grab the description from the return type
@@ -112,7 +112,7 @@ function the_return_desc() {
  * @return bool
  */
 function arguments_have_default_values() {
-	$return = wp_list_filter( get_post_meta( get_the_ID(), '_wp-parser_args', true ), array( 'name' => 'default' ) );
+	$return = wp_list_filter( get_post_meta( get_the_ID(), '_wp-parser_args', true ), [ 'name' => 'default' ] );
 
 	return apply_filters( 'wp_parser_arguments_have_default_values', ! empty( $return ) );
 }
@@ -140,7 +140,7 @@ function is_function_deprecated() {
  */
 function is_deprecated() {
 	$tags       = get_post_meta( get_the_ID(), '_wp-parser_tags', true );
-	$deprecated = wp_list_filter( $tags, array( 'name' => 'deprecated' ) );
+	$deprecated = wp_list_filter( $tags, [ 'name' => 'deprecated' ] );
 
 	$post_type = get_post_type( get_the_ID() );
 
@@ -161,28 +161,28 @@ function is_deprecated() {
 function get_arguments() {
 	$args_data     = get_post_meta( get_the_ID(), '_wp-parser_args', true );
 	$function_data = get_post_meta( get_the_ID(), '_wp-parser_tags', true );
-	$params        = wp_list_filter( $function_data, array( 'name' => 'param' ) );
+	$params        = wp_list_filter( $function_data, [ 'name' => 'param' ] );
 
-	$return_args = array();
+	$return_args = [];
 
 	if ( empty( $args_data ) ) {
-		$args_data = array();
+		$args_data = [];
 	}
 
 	foreach ( $args_data as $arg ) {
-		$param_tag = wp_list_filter( $params, array( 'variable' => $arg['name'] ) );
+		$param_tag = wp_list_filter( $params, [ 'variable' => $arg['name'] ] );
 		$param_tag = array_shift( $param_tag );
-		$param     = array(
+		$param     = [
 			'name'  => $arg['name'],
-			'types' => array(),
-		);
+			'types' => [],
+		];
 
 		if ( ! empty( $arg['default'] ) ) {
 			$param['default_value'] = $arg['default'];
 		}
 
 		if ( ! empty( $arg['type'] ) ) {
-			$param['types'] = array( $arg['type'] );
+			$param['types'] = [ $arg['type'] ];
 		} else if ( ! empty( $param_tag['types'] ) ) {
 			$param['types'] = $param_tag['types'];
 		}
@@ -205,21 +205,21 @@ function get_arguments() {
 function get_hook_arguments() {
 	$args_data = get_post_meta( get_the_ID(), '_wp-parser_args', true );
 	$hook_data = get_post_meta( get_the_ID(), '_wp-parser_tags', true );
-	$params    = wp_list_filter( $hook_data, array( 'name' => 'param' ) );
+	$params    = wp_list_filter( $hook_data, [ 'name' => 'param' ] );
 
-	$return_args = array();
+	$return_args = [];
 
 	if ( empty( $args_data ) ) {
-		$args_data = array();
+		$args_data = [];
 	}
 
 	foreach ( $args_data as $arg ) {
 		$param_tag = array_shift( $params );
-		$param     = array(
+		$param     = [
 			'name'  => '$(unnamed)',
-			'types' => array(),
+			'types' => [],
 			'value' => $arg,
-		);
+		];
 
 		if ( ! empty( $param_tag['variable'] ) ) {
 			$param['name'] = $param_tag['variable'];
@@ -251,7 +251,7 @@ function get_hook_arguments() {
 function get_prototype() {
 	$type = get_return_type();
 
-	$friendly_args = array();
+	$friendly_args = [];
 	$args          = get_arguments();
 	foreach ( $args as $arg ) {
 		$friendly = sprintf( '<span class="type">%s</span> <span class="variable">%s</span>', implode( '|', $arg['types'] ), $arg['name'] );
@@ -285,7 +285,7 @@ function the_prototype() {
  * @return string Prototype HTML
  */
 function get_hook_prototype() {
-	$friendly_args = array();
+	$friendly_args = [];
 	$args          = get_hook_arguments();
 	foreach ( $args as $arg ) {
 		$friendly = sprintf( '<span class="type">%s</span> <span class="variable">%s</span>', implode( '|', $arg['types'] ), $arg['name'] );

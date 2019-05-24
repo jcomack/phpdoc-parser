@@ -14,11 +14,11 @@ class PluginFinder {
 	/**
 	 * Finds the plugin data and returns a Plugin object, if data is found.
 	 *
-	 * @param iterable $files The files to search through.
+	 * @param array|IteratorAggregate $files The files to search through.
 	 *
 	 * @return NullPlugin|Plugin The plugin data.
 	 */
-	public static function find( iterable $files ) {
+	public static function find( $files ) {
 		$plugin = new NullPlugin();
 
 		foreach ( $files as $file ) {

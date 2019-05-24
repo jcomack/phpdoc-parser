@@ -28,27 +28,27 @@ class DocFile extends DocAbstract {
 	/**
 	 * @var array
 	 */
-	private $tags = array();
+	private $tags = [];
 
 	/**
 	 * @var array
 	 */
-	private $uses = array();
+	private $uses = [];
 
 	/**
 	 * @var array
 	 */
-	private $includes = array();
+	private $includes = [];
 
 	/**
 	 * @var array
 	 */
-	private $constants = array();
+	private $constants = [];
 
 	/**
 	 * @var array
 	 */
-	private $hooks = array();
+	private $hooks = [];
 
 	/**
 	 * @var Exporter
@@ -128,12 +128,12 @@ class DocFile extends DocAbstract {
 	 * @return array The array notation of the object.
 	 */
 	public function toArray() {
-		$out = array(
+		$out = [
 			'file'   => $this->docblock,
 			'path'   => $this->relativePath,
 			'root'   => $this->root,
 			'plugin' => $this->plugin->getName(),
-		);
+		];
 
 		if ( ! empty( $this->uses ) ) {
 			$out['uses']  = $this->uses;

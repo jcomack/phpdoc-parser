@@ -2,6 +2,8 @@
 
 namespace WP_Parser;
 
+use Parsedown;
+
 /**
  * Class Formatter
  *
@@ -51,7 +53,7 @@ class Formatter {
 	 */
 	public static function format_description( $description ) {
 		if ( class_exists( 'Parsedown' ) ) {
-			$parsedown   = \Parsedown::instance();
+			$parsedown   = Parsedown::instance();
 			$description = $parsedown->line( $description );
 		}
 

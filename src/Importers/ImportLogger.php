@@ -12,7 +12,7 @@ class ImportLogger implements LoggerAwareInterface {
 
 	use LoggerAwareTrait;
 
-	protected $stashed_errors = array();
+	protected $stashed_errors = [];
 
 	/**
 	 * ImportLogger constructor.

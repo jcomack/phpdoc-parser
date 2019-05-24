@@ -18,7 +18,7 @@ class Utils {
 	 *
 	 * @return Finder|WP_Error The found files. Throws an error if the directory can't be accessed.
 	 */
-	public static function get_files( $directory, $exclude_files = array() ) {
+	public static function get_files( $directory, $exclude_files = [] ) {
 		$finder = new Finder();
 
 		try {

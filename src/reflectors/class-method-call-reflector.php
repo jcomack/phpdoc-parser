@@ -4,6 +4,10 @@ namespace WP_Parser;
 
 use phpDocumentor\Reflection\BaseReflector;
 use phpDocumentor\Reflection\ClassReflector;
+use PHPParser_Node_Expr;
+use PHPParser_Node_Expr_FuncCall;
+use PHPParser_Node_Name;
+use PHPParser_Node_Name_FullyQualified;
 
 /**
  * A reflection of a method call expression.
@@ -32,12 +36,12 @@ class Method_Call_Reflector extends BaseReflector {
 			$caller = $this->node->var;
 		}
 
-		if ( $caller instanceof \PHPParser_Node_Expr ) {
+		if ( $caller instanceof PHPParser_Node_Expr ) {
 			$printer = new Pretty_Printer;
 			$caller = $printer->prettyPrintExpr( $caller );
-		} elseif ( $caller instanceof \PHPParser_Node_Name_FullyQualified ) {
+		} elseif ( $caller instanceof PHPParser_Node_Name_FullyQualified ) {
 			$caller = '\\' . $caller->toString();
-		} elseif ( $caller instanceof \PHPParser_Node_Name ) {
+		} elseif ( $caller instanceof PHPParser_Node_Name ) {
 			$caller = $caller->toString();
 		}
 
@@ -47,7 +51,7 @@ class Method_Call_Reflector extends BaseReflector {
 		if ( is_a( $caller, 'PHPParser_Node_Expr_FuncCall' ) ) {
 
 			// Add parentheses to signify this is a function call
-			/** @var \PHPParser_Node_Expr_FuncCall $caller */
+			/** @var PHPParser_Node_Expr_FuncCall $caller */
 			$caller = implode( '\\', $caller->name->parts ) . '()';
 		}
 
@@ -56,7 +60,7 @@ class Method_Call_Reflector extends BaseReflector {
 			$caller = $class_mapping[ $caller ];
 		}
 
-		return array( $caller, $name );
+		return [ $caller, $name ];
 	}
 
 	/**
@@ -88,7 +92,7 @@ class Method_Call_Reflector extends BaseReflector {
 		// List of global use generated using following command:
 		// ack "global \\\$[^;]+;" --no-filename | tr -d '\t' | sort | uniq | sed "s/global //g" | sed "s/, /,/g" | tr , '\n' | sed "s/;//g" | sort | uniq | sed "s/\\\$//g" | sed "s/[^ ][^ ]*/'&' => ''/g"
 		// There is probably an easier way, there are currently no globals that are classes starting with an underscore
-		$wp_globals = array(
+		$wp_globals = [
 			'authordata' => 'WP_User',
 			'custom_background' => 'Custom_Background',
 			'custom_image_header' => 'Custom_Image_Header',
@@ -114,13 +118,13 @@ class Method_Call_Reflector extends BaseReflector {
 			'wp_widget_factory' => 'WP_Widget_Factory',
 			'wp_xmlrpc_server' => 'wp_xmlrpc_server', // This can be overridden by plugins, for core assume this is ours
 			'wpdb' => 'wpdb',
-		);
+		];
 
-		$wp_functions = array(
+		$wp_functions = [
 			'get_current_screen()' => 'WP_Screen',
 			'_get_list_table()' => 'WP_List_Table', // This one differs because there are a lot of different List Tables, assume they all only overwrite existing functions on WP_List_Table
 			'wp_get_theme()' => 'WP_Theme',
-		);
+		];
 
 		$class_mapping = array_merge( $wp_globals, $wp_functions );
 

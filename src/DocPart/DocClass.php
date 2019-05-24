@@ -205,10 +205,13 @@ class DocClass implements DocPart {
 	public function getMethodByName( $name ) {
 		return array_shift( array_filter( $this->methods,
 			function( $method ) use ( $name ) {
-			if ( $method->getCallable()->getName() === $name ) {
-				return $method;
-			}
-		} ) );
+				if ( $method->getCallable()->getName() === $name ) {
+					return $method;
+				}
+
+				return false;
+			} )
+		);
 	}
 
 	/**
@@ -252,7 +255,7 @@ class DocClass implements DocPart {
 	 * @return array The array notation of the object.
 	 */
 	public function toArray() {
-		return array(
+		return [
 			'name' => $this->name,
 			'namespace' => $this->namespace,
 			'line' => $this->line,
@@ -264,6 +267,6 @@ class DocClass implements DocPart {
 			'properties' => $this->properties,
 			'methods' => array_map( function( $method ) { return $method->toArray(); }, $this->methods ),
 			'doc' => $this->doc,
-		);
+		];
 	}
 }
