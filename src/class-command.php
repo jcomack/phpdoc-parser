@@ -158,7 +158,7 @@ class Command extends WP_CLI_Command {
 
 		// Run the importer
 		$importer = new Importer();
-		$importer->get_logger()->setLogger( new WP_CLI_Logger() );
+		$importer->setLogger( new WP_CLI_Logger() );
 		$importer->import( $data, $skip_sleep, $import_ignored );
 
 		WP_CLI::line();

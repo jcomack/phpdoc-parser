@@ -2,6 +2,7 @@
 
 namespace WP_Parser;
 
+use Psr\Log\LoggerInterface;
 use WP_Error;
 use WP_Parser\Importers\ImportLogger;
 
@@ -125,12 +126,14 @@ class Importer {
 	}
 
 	/**
-	 * Gets the logger.
+	 * Sets the logger.
 	 *
-	 * @return ImportLogger The logger.
+	 * @param LoggerInterface $logger The logger to set.
+	 *
+	 * @return void.
 	 */
-	public function get_logger() {
-		return $this->logger;
+	public function setLogger( LoggerInterface $logger ) {
+		$this->logger->setLogger( $logger );
 	}
 
 	/**
