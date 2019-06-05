@@ -1,66 +1,44 @@
 <?php namespace WP_Parser;
 
-use Symfony\Component\Yaml\Yaml;
+use WP_Parser\PluginParser\Author;
+use WP_Parser\PluginParser\NullPlugin;
+use WP_Parser\PluginParser\Plugin;
+use WP_Parser\PluginParser\Textdomain;
 
+/**
+ * Class PluginFinder
+ * @package WP_Parser
+ */
 class PluginFinder {
 
-	// Keep track of the plugin found in the directory, including its files.
-
-	private $directory;
-	private $plugin = array();
-
 	/**
-	 * @var array
+	 * Finds the plugin data and returns a Plugin object, if data is found.
+	 *
+	 * @param array|IteratorAggregate $files The files to search through.
+	 *
+	 * @return NullPlugin|Plugin The plugin data.
 	 */
-	private $exclude_files;
-
-	private $valid_plugins = array();
-
-	public function __construct( $directory, $exclude_files = array() ) {
-		$this->directory 	 = $directory;
-		$this->exclude_files = $exclude_files;
-		$this->valid_plugins = $this->collect_valid_plugins();
-	}
-
-	public function find() {
-		$files = Utils::get_files( $this->directory, $this->exclude_files );
+	public static function find( $files ) {
+		$plugin = new NullPlugin();
 
 		foreach ( $files as $file ) {
-			$plugin_data = $this->get_plugin_data( $file );
+			$plugin_data = get_plugin_data( $file, false, false );
 
-			if ( $plugin_data === array() ) {
-				continue;
+			if ( ! empty( $plugin_data['Name'] ) ) {
+				$plugin = new Plugin(
+					$plugin_data['Name'],
+					$plugin_data['PluginURI'],
+					$plugin_data['Version'],
+					$plugin_data['Description'],
+					new Author( $plugin_data['Author'], $plugin_data['AuthorURI'] ),
+					new Textdomain( $plugin_data['TextDomain'], $plugin_data['DomainPath'] ),
+					$plugin_data['Network']
+				);
+				break;
 			}
-
-			$this->plugin = $plugin_data;
-			break;
-		}
-	}
-
-	public function has_plugin() {
-		return $this->plugin !== array();
-	}
-
-	public function get_plugin() {
-		return $this->plugin;
-	}
-
-	public function is_valid_plugin() {
-		return array_search( $this->plugin['Name'], array_column( $this->valid_plugins, 'name' ) ) !== false;
-	}
-
-	public function collect_valid_plugins() {
-		return Yaml::parseFile( dirname( __DIR__ ) . '/plugins.yml' );
-	}
-
-	private function get_plugin_data( $file ) {
-		$plugin_data = get_plugin_data( $file, false, false );
-
-		if ( ! empty( $plugin_data['Name'] ) ) {
-			return $plugin_data;
 		}
 
-		return array();
+		return $plugin;
 	}
 
 }

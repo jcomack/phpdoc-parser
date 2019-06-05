@@ -17,7 +17,7 @@ class Static_Method_Call_Reflector extends Method_Call_Reflector {
 		$prefix = ( is_a( $class, 'PHPParser_Node_Name_FullyQualified' ) ) ? '\\' : '';
 		$class = $prefix . $this->_resolveName( implode( '\\', $class->parts ) );
 
-		return array( $class, $this->getShortName() );
+		return [ $class, $this->getShortName() ];
 	}
 
 	/**

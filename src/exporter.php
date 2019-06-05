@@ -15,6 +15,7 @@ use phpDocumentor\Reflection\ReflectionAbstract;
  * @package WP_Parser
  */
 class Exporter {
+
 	/**
 	 * Exports the docblock for the passed element.
 	 *
@@ -26,24 +27,24 @@ class Exporter {
 		$docblock = $element->getDocBlock();
 
 		if ( ! $docblock ) {
-			return array(
+			return [
 				'description'      => '',
 				'long_description' => '',
-				'tags'             => array(),
-			);
+				'tags'             => [],
+			];
 		}
 
-		$output = array(
+		$output = [
 			'description'      => preg_replace( '/[\n\r]+/', ' ', $docblock->getShortDescription() ),
 			'long_description' => Formatter::fix_newlines( $docblock->getLongDescription()->getFormattedContents() ),
-			'tags'             => array(),
-		);
+			'tags'             => [],
+		];
 
 		foreach ( $docblock->getTags() as $tag ) {
-			$tag_data = array(
+			$tag_data = [
 				'name'    => $tag->getName(),
 				'content' => preg_replace( '/[\n\r]+/', ' ', Formatter::format_description( $tag->getDescription() ) ),
-			);
+			];
 
 			if ( method_exists( $tag, 'getTypes' ) ) {
 				$tag_data['types'] = $tag->getTypes();
@@ -85,30 +86,6 @@ class Exporter {
 	}
 
 	/**
-	 * Exports a formatted array of hooks based on the passed hooks.
-	 *
-	 * @param Hook_Reflector[] $hooks The hooks to format.
-	 *
-	 * @return array The formatted hooks.
-	 */
-	public function export_hooks( array $hooks ) {
-		$out = array();
-
-		foreach ( $hooks as $hook ) {
-			$out[] = array(
-				'name'      => $hook->getName(),
-				'line'      => $hook->getLineNumber(),
-				'end_line'  => $hook->getNode()->getAttribute( 'endLine' ),
-				'type'      => $hook->getType(),
-				'arguments' => $hook->getArgs(),
-				'doc'       => $this->export_docblock( $hook ),
-			);
-		}
-
-		return $out;
-	}
-
-	/**
 	 * Exports a formatted array of arguments based on te passed arguments.
 	 *
 	 * @param ArgumentReflector[] $arguments The arguments to format.
@@ -116,14 +93,14 @@ class Exporter {
 	 * @return array The formatted arguments.
 	 */
 	public function export_arguments( array $arguments ) {
-		$output = array();
+		$output = [];
 
 		foreach ( $arguments as $argument ) {
-			$output[] = array(
+			$output[] = [
 				'name'    => $argument->getName(),
 				'default' => $argument->getDefault(),
 				'type'    => $argument->getType(),
-			);
+			];
 		}
 
 		return $output;
@@ -137,10 +114,10 @@ class Exporter {
 	 * @return array The formatted properties.
 	 */
 	public function export_properties( array $properties ) {
-		$out = array();
+		$out = [];
 
 		foreach ( $properties as $property ) {
-			$out[] = array(
+			$out[] = [
 				'name'       => $property->getName(),
 				'line'       => $property->getLineNumber(),
 				'end_line'   => $property->getNode()->getAttribute( 'endLine' ),
@@ -148,49 +125,10 @@ class Exporter {
 				'static'     => $property->isStatic(),
 				'visibility' => $property->getVisibility(),
 				'doc'        => $this->export_docblock( $property ),
-			);
+			];
 		}
 
 		return $out;
-	}
-
-	/**
-	 * Exports a formatted array of methods based on the passed methods.
-	 *
-	 * @param MethodReflector[] $methods The methofs to format.
-	 *
-	 * @return array The formatted methods.
-	 */
-	public function export_methods( array $methods ) {
-		$output = array();
-
-		foreach ( $methods as $method ) {
-			$method_data = array(
-				'name'       => $method->getShortName(),
-				'namespace'  => $method->getNamespace(),
-				'aliases'    => $method->getNamespaceAliases(),
-				'line'       => $method->getLineNumber(),
-				'end_line'   => $method->getNode()->getAttribute( 'endLine' ),
-				'final'      => $method->isFinal(),
-				'abstract'   => $method->isAbstract(),
-				'static'     => $method->isStatic(),
-				'visibility' => $method->getVisibility(),
-				'arguments'  => $this->export_arguments( $method->getArguments() ),
-				'doc'        => $this->export_docblock( $method ),
-			);
-
-			if ( ! empty( $method->uses ) ) {
-				$method_data['uses'] = $this->export_uses( $method->uses );
-
-				if ( ! empty( $method->uses['hooks'] ) ) {
-					$method_data['hooks'] = $this->export_hooks( $method->uses['hooks'] );
-				}
-			}
-
-			$output[] = $method_data;
-		}
-
-		return $output;
 	}
 
 	/**
@@ -203,7 +141,7 @@ class Exporter {
 	 * @return array
 	 */
 	public function export_uses( array $uses ) {
-		$out = array();
+		$out = [];
 
 		// Ignore hooks here, they are exported separately.
 		unset( $uses['hooks'] );
@@ -269,12 +207,12 @@ class Exporter {
 	 * @return bool Whether or not the element is deprecated.
 	 */
 	protected function is_deprecated( $element ) {
-		$deprecations = array(
+		$deprecations = [
 			'_deprecated_file',
 			'_deprecated_function',
 			'_deprecated_argument',
 			'_deprecated_hook'
-		);
+		];
 
 		return in_array( $element->getName(), $deprecations, true );
 	}
@@ -289,13 +227,13 @@ class Exporter {
 	protected function get_method_information( $element ) {
 		$name = $element->getName();
 
-		return array(
+		return [
 			'name'     => $name[1],
 			'class'    => $name[0],
 			'static'   => $element->isStatic(),
 			'line'     => $element->getLineNumber(),
 			'end_line' => $element->getNode()->getAttribute( 'endLine' ),
-		);
+		];
 	}
 
 	/**
@@ -306,10 +244,10 @@ class Exporter {
 	 * @return array The function information.
 	 */
 	protected function get_function_information( $element ) {
-		return array(
+		return [
 			'name'     => $element->getName(),
 			'line'     => $element->getLineNumber(),
 			'end_line' => $element->getNode()->getAttribute( 'endLine' ),
-		);
+		];
 	}
 }

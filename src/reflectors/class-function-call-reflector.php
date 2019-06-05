@@ -7,6 +7,8 @@
 namespace WP_Parser;
 
 use phpDocumentor\Reflection\BaseReflector;
+use PHPParser_Node_Expr_ArrayDimFetch;
+use PHPParser_Node_Expr_Variable;
 
 /**
  * A reflection of a function call expression.
@@ -33,7 +35,7 @@ class Function_Call_Reflector extends BaseReflector {
 			return (string) $shortName;
 		}
 
-		/** @var \PHPParser_Node_Expr_ArrayDimFetch $shortName */
+		/** @var PHPParser_Node_Expr_ArrayDimFetch $shortName */
 		if ( is_a( $shortName, 'PHPParser_Node_Expr_ArrayDimFetch' ) ) {
 			$var = $shortName->var->name;
 			$dim = $shortName->dim->name->parts[0];
@@ -41,7 +43,7 @@ class Function_Call_Reflector extends BaseReflector {
 			return "\${$var}[{$dim}]";
 		}
 
-		/** @var \PHPParser_Node_Expr_Variable $shortName */
+		/** @var PHPParser_Node_Expr_Variable $shortName */
 		if ( is_a( $shortName, 'PHPParser_Node_Expr_Variable' ) ) {
 			return $shortName->name;
 		}

@@ -24,7 +24,7 @@ class Hook_Reflector extends BaseReflector {
 	 * @return string
 	 */
 	private function cleanupName( $name ) {
-		$matches = array();
+		$matches = [];
 
 		// quotes on both ends of a string
 		if ( preg_match( '/^[\'"]([^\'"]*)[\'"]$/', $name, $matches ) ) {
@@ -86,7 +86,7 @@ class Hook_Reflector extends BaseReflector {
 	 */
 	public function getArgs() {
 		$printer = new Pretty_Printer;
-		$args    = array();
+		$args    = [];
 		foreach ( $this->node->args as $arg ) {
 			$args[] = $printer->prettyPrintArg( $arg );
 		}

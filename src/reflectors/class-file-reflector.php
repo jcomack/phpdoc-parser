@@ -3,7 +3,11 @@
 namespace WP_Parser;
 
 use phpDocumentor\Reflection;
+use phpDocumentor\Reflection\BaseReflector;
 use phpDocumentor\Reflection\FileReflector;
+use PhpParser\Node;
+use PHPParser_Comment_Doc;
+use PHPParser_Node_Expr_FuncCall;
 
 /**
  * Reflection class for a full file.
@@ -20,27 +24,27 @@ class File_Reflector extends FileReflector {
 	 *      @type Function_Call_Reflector[] $functions The functions called.
 	 * }
 	 */
-	public $uses = array();
+	public $uses = [];
 
 	/**
 	 * List of elements used in the current class scope, indexed by method.
 	 *
 	 * @var array[][] {@see \WP_Parser\File_Reflector::$uses}
 	 */
-	protected $method_uses_queue = array();
+	protected $method_uses_queue = [];
 
 	/**
 	 * Stack of classes/methods/functions currently being parsed.
 	 *
 	 * @see \WP_Parser\FileReflector::getLocation()
-	 * @var \phpDocumentor\Reflection\BaseReflector[]
+	 * @var BaseReflector[]
 	 */
-	protected $location = array();
+	protected $location = [];
 
 	/**
 	 * Last DocBlock associated with a non-documentable element.
 	 *
-	 * @var \PHPParser_Comment_Doc
+	 * @var PHPParser_Comment_Doc
 	 */
 	protected $last_doc = null;
 
@@ -61,9 +65,11 @@ class File_Reflector extends FileReflector {
 	 * Finally, we pick up any docblocks for nodes that usually aren't documentable,
 	 * so they can be assigned to the hooks to which they may belong.
 	 *
-	 * @param \PHPParser_Node $node
+	 * @param Node $node The node to enter.
+	 *
+	 * @return void
 	 */
-	public function enterNode( \PHPParser_Node $node ) {
+	public function enterNode( Node $node ) {
 		parent::enterNode( $node );
 
 		switch ( $node->getType() ) {
@@ -83,7 +89,7 @@ class File_Reflector extends FileReflector {
 
 				if ( $this->isFilter( $node ) ) {
 					if ( $this->last_doc && ! $node->getDocComment() ) {
-						$node->setAttribute( 'comments', array( $this->last_doc ) );
+						$node->setAttribute( 'comments', [ $this->last_doc ] );
 						$this->last_doc = null;
 					}
 
@@ -112,7 +118,7 @@ class File_Reflector extends FileReflector {
 
 			// Parse out `new Class()` calls as uses of Class::__construct().
 			case 'Expr_New':
-				$method = new \WP_Parser\Method_Call_Reflector( $node, $this->context );
+				$method = new Method_Call_Reflector( $node, $this->context );
 
 				// Add it to the list of methods used in this scope.
 				$this->getLocation()->uses['methods'][] = $method;
@@ -137,9 +143,11 @@ class File_Reflector extends FileReflector {
 	 * We can now access the function/method reflectors, so we can assign any queued
 	 * hooks to them. The reflector for a node isn't created until the node is left.
 	 *
-	 * @param \PHPParser_Node $node
+	 * @param Node $node The node to leave.
+	 *
+	 * @return void
 	 */
-	public function leaveNode( \PHPParser_Node $node ) {
+	public function leaveNode( Node $node ) {
 
 		parent::leaveNode( $node );
 
@@ -166,7 +174,7 @@ class File_Reflector extends FileReflector {
 					}
 				}
 
-				$this->method_uses_queue = array();
+				$this->method_uses_queue = [];
 				array_pop( $this->location );
 				break;
 
@@ -197,11 +205,11 @@ class File_Reflector extends FileReflector {
 	}
 
 	/**
-	 * @param \PHPParser_Node $node
+	 * @param PHPParser_Node $node
 	 *
 	 * @return bool
 	 */
-	protected function isFilter( \PHPParser_Node $node ) {
+	protected function isFilter( PHPParser_Node $node ) {
 		// Ignore variable functions
 		if ( $node->name->getType() !== 'Name' ) {
 			return false;
@@ -209,14 +217,14 @@ class File_Reflector extends FileReflector {
 
 		$calling = (string) $node->name;
 
-		$functions = array(
+		$functions = [
 			'apply_filters',
 			'apply_filters_ref_array',
 			'apply_filters_deprecated',
 			'do_action',
 			'do_action_ref_array',
 			'do_action_deprecated',
-		);
+		];
 
 		return in_array( $calling, $functions );
 	}
@@ -229,13 +237,15 @@ class File_Reflector extends FileReflector {
 	}
 
 	/**
-	 * @param \PHPParser_Node $node
+	 * Determines whether the node is documentable.
 	 *
-	 * @return bool
+	 * @param Node $node The node to check.
+	 *
+	 * @return bool Whether or not the node is documentable.
 	 */
-	protected function isNodeDocumentable( \PHPParser_Node $node ) {
+	protected function isNodeDocumentable( Node $node ) {
 		return parent::isNodeDocumentable( $node )
-		|| ( $node instanceof \PHPParser_Node_Expr_FuncCall
+		|| ( $node instanceof PHPParser_Node_Expr_FuncCall
 			&& $this->isFilter( $node ) );
 	}
 }
