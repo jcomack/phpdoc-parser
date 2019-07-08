@@ -205,11 +205,11 @@ class File_Reflector extends FileReflector {
 	}
 
 	/**
-	 * @param PHPParser_Node $node
+	 * @param Node $node
 	 *
 	 * @return bool
 	 */
-	protected function isFilter( PHPParser_Node $node ) {
+	protected function isFilter( Node $node ) {
 		// Ignore variable functions
 		if ( $node->name->getType() !== 'Name' ) {
 			return false;

@@ -175,7 +175,14 @@ class Relationships {
 
 					// If linking to a method, we need to alter the slug in case it's static or references a class.
 					if ( $to === 'method' && ( $to_item['static'] || ! empty( $to_item['class'] ) ) ) {
-						$to_item_slug = $to_item['class'] . '-' . $to_item['name'];
+
+						$to_object_class = $to_item['class'];
+
+						if ( is_object( $to_item['class'] ) ) {
+							$to_object_class = $to_item['class']->name;
+						}
+
+						$to_item_slug = $to_object_class . '-' . $to_item['name'];
 					}
 
 					$namespace = ( $to === 'hook' ) ? null : $data['namespace'];

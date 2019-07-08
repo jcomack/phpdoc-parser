@@ -4,6 +4,7 @@ namespace WP_Parser;
 
 use phpDocumentor\Reflection\BaseReflector;
 use phpDocumentor\Reflection\ClassReflector;
+use PhpParser\Node\Expr\Variable;
 use PHPParser_Node_Expr;
 use PHPParser_Node_Expr_FuncCall;
 use PHPParser_Node_Name;
@@ -39,10 +40,18 @@ class Method_Call_Reflector extends BaseReflector {
 		if ( $caller instanceof PHPParser_Node_Expr ) {
 			$printer = new Pretty_Printer;
 			$caller = $printer->prettyPrintExpr( $caller );
-		} elseif ( $caller instanceof PHPParser_Node_Name_FullyQualified ) {
+		}
+
+		if ( $caller instanceof PHPParser_Node_Name_FullyQualified ) {
 			$caller = '\\' . $caller->toString();
-		} elseif ( $caller instanceof PHPParser_Node_Name ) {
+		}
+
+		if ( $caller instanceof PHPParser_Node_Name ) {
 			$caller = $caller->toString();
+		}
+
+		if ( $caller instanceof Variable ) {
+			$caller = $caller->name;
 		}
 
 		$caller = $this->_resolveName( $caller );
@@ -56,6 +65,7 @@ class Method_Call_Reflector extends BaseReflector {
 		}
 
 		$class_mapping = $this->_getClassMapping();
+
 		if ( array_key_exists( $caller, $class_mapping ) ) {
 			$caller = $class_mapping[ $caller ];
 		}
