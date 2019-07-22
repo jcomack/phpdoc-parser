@@ -1,33 +1,34 @@
-# WP Parser
+# PHPDoc Parser
 
-WP-Parser is the parser for creating the new code reference at [developer.wordpress.org](https://developer.wordpress.org/reference). It parses the inline documentation and produces custom post type entries in WordPress.
-
-We are currently looking for contributors to help us complete the work on the parser.
-
-There is a guide to developing for developer.wordpress.org in the [WordPress documentation handbook](https://make.wordpress.org/docs/handbook/projects/devhub/)
+PHPDoc Parser is the parser based off of the WP-Parser used for creating the new code reference at [developer.wordpress.org](https://developer.wordpress.org/reference). This version parses the inline documentation for the various Yoast plugins and produces custom post type entries in WordPress.
 
 ## Requirements
-* PHP 5.4+
+* PHP 7+ 
 * [Composer](https://getcomposer.org/)
 * [WP CLI](https://wp-cli.org/)
 
 Clone the repository into your WordPress plugins directory:
 
 ```bash
-git clone https://github.com/WordPress/phpdoc-parser.git
+git clone https://github.com/jcoamck/phpdoc-parser.git
 ```
 
-After that install the dependencies using composer in the parser directory:
+After that install the dependencies using Composer in the parser directory:
 
 ```bash
 composer install
 ```
 
 ## Running
-Activate the plugin first:
+
+The parser should be run via WP-CLI. Before you begin, ensure that you have activated the plugin first by running:
 
     wp plugin activate phpdoc-parser
 
-In your site's directory:
+Then, when you're ready to parse your first plugin, run the following command:
 
-    wp parser create /path/to/source/code --user=<id|login>
+    wp parser create /<directory_where_plugin_is_located>/ --user=admin
+
+If you're running a multisite environment, please ensure you add the following parameter to the command to ensure all parsed documentation is placed in the correct database tables / sub-site:
+
+    --url="http://sub.site.test"
