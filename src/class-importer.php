@@ -93,9 +93,18 @@ class Importer {
 	protected $plugin_name = '';
 
 	/**
+	 * @var string
+	 */
+	protected $plugin_dir = '';
+
+	/**
 	 * @var ImportLogger
 	 */
 	private $logger;
+	/**
+	 * @var array|WP_Error
+	 */
+	private $plugin_term;
 
 	/**
 	 * Constructor. Sets up post type/taxonomy names.
@@ -304,6 +313,9 @@ class Importer {
 	 * @return void
 	 */
 	public function import_file( array $file, $skip_sleep = false, $import_ignored = false ) {
+		$this->plugin_term = $this->insert_term( $file['plugin'], $this->taxonomy_plugin );
+		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-directory', plugin_basename( $file['root'] ), true );
+
 		if ( ! isset( $this->plugin_name ) || $this->plugin_name !== $file['plugin'] ) {
 			$this->plugin_name = $file['plugin'];
 		}
@@ -743,13 +755,8 @@ class Importer {
 			$post_id = $this->insert_post( $post_data );
 
 			// Record the plugin if there is one.
-			if ( ! empty( $this->plugin_name ) ) {
-				$this->insert_term( $this->plugin_name, $this->taxonomy_plugin );
-
-				wp_set_object_terms( $post_id, $this->plugin_name, $this->taxonomy_plugin );
-
-				$this->_set_namespaces( $post_id, $data );
-			}
+			$this->assign_additional_plugin( $post_id, $this->plugin_name );
+			$this->_set_namespaces( $post_id, $data );
 		}
 
 		if ( ! $post_id || is_wp_error( $post_id ) ) {
@@ -1118,8 +1125,6 @@ class Importer {
 	 * @return array The term ID's that were set.
 	 */
 	protected function assign_additional_plugin( $post_id, $plugin ) {
-		$this->insert_term( $plugin, $this->taxonomy_plugin );
-
 		return wp_set_object_terms( $post_id, $plugin, $this->taxonomy_plugin, true );
 	}
 }
