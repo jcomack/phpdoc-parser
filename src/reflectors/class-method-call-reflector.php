@@ -4,11 +4,14 @@ namespace WP_Parser;
 
 use phpDocumentor\Reflection\BaseReflector;
 use phpDocumentor\Reflection\ClassReflector;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\Variable;
 use PHPParser_Node_Expr;
 use PHPParser_Node_Expr_FuncCall;
 use PHPParser_Node_Name;
 use PHPParser_Node_Name_FullyQualified;
+use PhpParser\Node\Name\FullyQualified;
 
 /**
  * A reflection of a method call expression.
@@ -37,12 +40,16 @@ class Method_Call_Reflector extends BaseReflector {
 			$caller = $this->node->var;
 		}
 
+		if ( $caller instanceof PropertyFetch ) {
+			$caller = $caller->var;
+		}
+
 		if ( $caller instanceof PHPParser_Node_Expr ) {
 			$printer = new Pretty_Printer;
 			$caller = $printer->prettyPrintExpr( $caller );
 		}
 
-		if ( $caller instanceof PHPParser_Node_Name_FullyQualified ) {
+		if ( $caller instanceof PHPParser_Node_Name_FullyQualified || $caller instanceof FullyQualified ) {
 			$caller = '\\' . $caller->toString();
 		}
 
@@ -57,13 +64,13 @@ class Method_Call_Reflector extends BaseReflector {
 		$caller = $this->_resolveName( $caller );
 
 		// If the caller is a function, convert it to the function name
-		if ( is_a( $caller, 'PHPParser_Node_Expr_FuncCall' ) ) {
+		if ( is_a( $caller, 'PHPParser_Node_Expr_FuncCall' ) || $caller instanceof FuncCall ) {
 
 			// Add parentheses to signify this is a function call
 			/** @var PHPParser_Node_Expr_FuncCall $caller */
 			$caller = implode( '\\', $caller->name->parts ) . '()';
 		}
-
+		
 		$class_mapping = $this->_getClassMapping();
 
 		if ( array_key_exists( $caller, $class_mapping ) ) {
