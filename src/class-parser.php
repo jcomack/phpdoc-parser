@@ -58,7 +58,6 @@ class Parser {
 
 		add_filter( 'wp_parser_get_arguments', [ $this, 'make_args_safe' ] );
 		add_filter( 'wp_parser_return_type', [ $this, 'humanize_separator' ] );
-		add_filter( 'post_type_link', [ $this, 'method_permalink' ], 10, 2 );
 	}
 
 	/**
@@ -217,25 +216,6 @@ class Parser {
 				]
 			);
 		}
-	}
-
-	/**
-	 * Gets the method permalink.
-	 *
-	 * @param string   $link The current link to fallback on.
-	 * @param WP_Post $post The post to base the link on.
-	 *
-	 * @return string The method permalink.
-	 */
-	public function method_permalink( $link, $post ) {
-
-		if ( $post->post_type !== 'wp-parser-method' || $post->post_parent === 0 ) {
-			return $link;
-		}
-
-		list( $class, $method ) = explode( '-', $post->post_name );
-
-		return home_url( user_trailingslashit( "method/$class/$method" ) );
 	}
 
 	/**
