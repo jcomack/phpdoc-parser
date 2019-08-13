@@ -178,7 +178,6 @@ class Importer {
 		remove_action( 'transition_post_status', '__clear_multi_author_cache', 10 );
 
 		delete_option( 'wp_parser_imported_wp_version' );
-		delete_option( 'wp_parser_root_import_dir' );
 
 		// Sanity check -- do the required post types exist?
 		if ( ! post_type_exists( $this->post_type_class ) || ! post_type_exists( $this->post_type_function ) || ! post_type_exists( $this->post_type_hook ) ) {
@@ -191,8 +190,6 @@ class Importer {
 			$this->logger->error( sprintf( 'Missing taxonomy; check that "%1$s" is registered.', $this->taxonomy_file ) );
 			exit;
 		}
-
-		$root = '';
 
 		foreach ( $files as $file ) {
 			$this->logger->info(
@@ -207,15 +204,6 @@ class Importer {
 			$file_number++;
 
 			$this->import_file( $file, $skip_sleep, $import_ignored_functions );
-
-			if ( empty( $root ) && ( isset( $file['root'] ) && $file['root'] ) ) {
-				$root = $file['root'];
-			}
-		}
-
-		if ( ! empty( $root ) ) {
-			update_option( 'wp_parser_root_import_dir', $root );
-			$this->logger->info( 'Updated option wp_parser_root_import_dir: ' . $root );
 		}
 
 		$this->log_last_import();
