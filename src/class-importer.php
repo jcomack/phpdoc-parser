@@ -1032,6 +1032,24 @@ class Importer {
 	}
 
 	/**
+	 * Gets the tag's data based on the passed name.
+	 *
+	 * @param array  $tags The tags data set to extract the data from.
+	 * @param string $name The name of the tag to retrieve.
+	 *
+	 * @return array The tags data. Returns an empty array if none could be found.
+	 */
+	protected function get_tags_data( array $tags, string $name ) {
+		$tag_data = wp_list_filter( $tags, [ 'name' => $name ] );
+
+		if ( empty( $tag_data ) ) {
+			$tag_data = wp_list_filter( $this->file_meta['docblock']['tags'], [ 'name' => $name ] );
+		}
+
+		return $tag_data;
+	}
+
+	/**
 	 * Sets the packages for the post based on the passed tag data.
 	 *
 	 * @param int 	$post_id The post ID.
@@ -1043,18 +1061,9 @@ class Importer {
 		$anything_updated = [];
 
 		$packages = [
-			'main' => wp_list_filter( $tags, [ 'name' => 'package' ] ),
-			'sub'  => wp_list_filter( $tags, [ 'name' => 'subpackage' ] ),
+			'main' => $this->get_tags_data( $tags, 'package' ),
+			'sub'  => $this->get_tags_data( $tags, 'subpackage' ),
 		];
-
-		// If the @package/@subpackage is not set by the individual function or class, get it from the file scope
-		if ( empty( $packages['main'] ) ) {
-			$packages['main'] = wp_list_filter( $this->file_meta['docblock']['tags'], [ 'name' => 'package' ] );
-		}
-
-		if ( empty( $packages['sub'] ) ) {
-			$packages['sub'] = wp_list_filter( $this->file_meta['docblock']['tags'], [ 'name' => 'subpackage' ] );
-		}
 
 		$main_package_id  = false;
 		$package_term_ids = [];
