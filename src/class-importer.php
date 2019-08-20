@@ -177,8 +177,6 @@ class Importer {
 		remove_action( 'transition_post_status', '_update_blog_date_on_post_publish', 10 );
 		remove_action( 'transition_post_status', '__clear_multi_author_cache', 10 );
 
-		delete_option( 'wp_parser_imported_wp_version' );
-
 		// Sanity check -- do the required post types exist?
 		if ( ! post_type_exists( $this->post_type_class ) || ! post_type_exists( $this->post_type_function ) || ! post_type_exists( $this->post_type_hook ) ) {
 			$this->logger->error( sprintf( 'Missing post type; check that "%1$s", "%2$s", and "%3$s" are registered.', $this->post_type_class, $this->post_type_function, $this->post_type_hook ) );
@@ -207,11 +205,6 @@ class Importer {
 		}
 
 		$this->log_last_import();
-
-		$wp_version = get_option( 'wp_parser_imported_wp_version' );
-		if ( $wp_version ) {
-			$this->logger->info( 'Updated option wp_parser_imported_wp_version: ' . $wp_version );
-		}
 
 		/**
 		 * Workaround for a WP core bug where hierarchical taxonomy caches are not being cleared
@@ -303,6 +296,7 @@ class Importer {
 	public function import_file( array $file, $skip_sleep = false, $import_ignored = false ) {
 		$this->plugin_term = $this->insert_term( $file['plugin'], $this->taxonomy_plugin );
 		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-directory', plugin_basename( $file['root'] ), true );
+		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-version',  $file['plugin_version'], true );
 
 		if ( ! isset( $this->plugin_name ) || $this->plugin_name !== $file['plugin'] ) {
 			$this->plugin_name = $file['plugin'];
@@ -394,10 +388,6 @@ class Importer {
 			if ( ! $skip_sleep && $count % 10 === 0 ) {
 				sleep( 3 );
 			}
-		}
-
-		if ( $file['path'] === 'wp-includes/version.php' ) {
-			$this->import_version( $file );
 		}
 	}
 
@@ -532,29 +522,6 @@ class Importer {
 		}
 
 		return $method_id;
-	}
-
-	/**
-	 * Updates the 'wp_parser_imported_wp_version' option with the version from wp-includes/version.php.
-	 *
-	 * @param array   $data The data to extract the version from.
-	 *
-	 * @return void
-	 */
-	protected function import_version( $data ) {
-
-		$version_path = $data['root'] . '/' . $data['path'];
-
-		if ( ! is_readable( $version_path ) ) {
-			return;
-		}
-
-		include $version_path;
-
-		if ( isset( $wp_version ) && $wp_version ) {
-			update_option( 'wp_parser_imported_wp_version', $wp_version );
-			$this->logger->info( "\t" . sprintf( 'Updated option wp_parser_imported_wp_version to "%1$s"', $wp_version ) );
-		}
 	}
 
 	/**
