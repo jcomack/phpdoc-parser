@@ -367,27 +367,36 @@ class Importer {
 			$count++;
 
 			// TODO figure our why are we still doing this
-			if ( ! $skip_sleep && $count % 10 === 0 ) {
-				sleep( 3 );
-			}
+			$this->add_sleep( $count );
 		}
 
 		foreach ( $file['classes'] as $class ) {
 			$this->import_class( $class, $import_ignored );
 			$count++;
 
-			if ( ! $skip_sleep && $count % 10 === 0 ) {
-				sleep( 3 );
-			}
+			$this->add_sleep( $count );
 		}
 
 		foreach ( $file['hooks'] as $hook ) {
 			$this->import_hook( $hook, 0, $import_ignored );
 			$count++;
 
-			if ( ! $skip_sleep && $count % 10 === 0 ) {
-				sleep( 3 );
-			}
+			$this->add_sleep( $count );
+		}
+	}
+
+	/**
+	 * Adds a sleep timeout after the amount of processed items is a multitude of 10.
+	 *
+	 * @param int  $count	The amount of processed items.
+	 * @param bool $skip	Whether or not sleeping should be skipped. Defaults to false.
+	 * @param int  $amount  The amount of seconds to sleep. Defaults to 3.
+	 *
+	 * @return void
+	 */
+	protected function add_sleep( int $count, bool $skip = false, int $amount = 3 ) {
+		if ( ! $skip && $count % 10 === 0 ) {
+			sleep( $amount );
 		}
 	}
 
