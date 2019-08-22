@@ -10,7 +10,7 @@ PHPDoc Parser is the parser based off of the WP-Parser used for creating the new
 Clone the repository into your WordPress plugins directory:
 
 ```bash
-git clone https://github.com/jcoamck/phpdoc-parser.git
+git clone https://github.com/jcomack/phpdoc-parser.git
 ```
 
 After that install the dependencies using Composer in the parser directory:
