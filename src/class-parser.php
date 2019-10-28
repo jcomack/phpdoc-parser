@@ -88,7 +88,7 @@ class Parser {
 			register_post_type(
 				'wp-parser-method',
 				[
-					'has_archive' => 'methods',
+					'has_archive' => false,
 					'label'       => __( 'Methods', 'wp-parser' ),
 					'public'      => true,
 					'rewrite'     => [
