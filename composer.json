@@ -26,7 +26,7 @@
 	},
 	"autoload"   : {
 		"classmap": ["src"],
-		"files"   : ["src/runner.php", "src/template.php"],
+		"files"   : ["src/runner.php"],
 		"psr-4": {
 			"WP_Parser\\": "src"
 		}
