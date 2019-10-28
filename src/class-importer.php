@@ -599,7 +599,7 @@ class Importer {
 	 * Gets the ID of the post that exists with the passed slug and post type.
 	 * Additionally can be limited by the parent ID.
 	 *
-	 * @param string $slug		The name of the post to search for.
+	 * @param string $post_name	The name of the post to search for.
 	 * @param string $post_type The post type to search for.
 	 *
 	 * @return int The post ID.
