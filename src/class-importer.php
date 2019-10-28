@@ -320,19 +320,6 @@ class Importer {
 			$this->plugin_name = $file['plugin'];
 		}
 
-		/**
-		 * Filter whether to proceed with importing a prospective file.
-		 *
-		 * Returning a falsey value to the filter will short-circuit processing of the import file.
-		 *
-		 * @param bool  $display Whether to proceed with importing the file. Defaults to true.
-		 * @param array $file   The file data.
-		 */
-		if ( ! apply_filters( 'wp_parser_pre_import_file', true, $file ) ) {
-			$this->logger->info( sprintf( 'Skipping file "%s".', $file['path'] ), 1 );
-			return;
-		}
-
 		// Maybe add this file to the file taxonomy
 		$slug = sanitize_title( str_replace( '/', '_', $file['path'] ) );
 
@@ -440,33 +427,6 @@ class Importer {
 	 * @return bool|int Post ID of this hook, false if any failure.
 	 */
 	public function import_hook( array $data, $parent_post_id = 0, $import_ignored = false ) {
-
-		/**
-		 * Filter whether to skip parsing duplicate hooks.
-		 *
-		 * "Duplicate hooks" are characterized in WordPress core by a preceding DocBlock comment
-		 * including the phrases "This action is documented in" or "This filter is documented in".
-		 *
-		 * Passing a truthy value will skip the parsing of duplicate hooks.
-		 *
-		 * @param bool $skip Whether to skip parsing duplicate hooks. Default false.
-		 */
-		$skip_duplicates = apply_filters( 'wp_parser_skip_duplicate_hooks', false );
-
-		if ( $skip_duplicates === true ) {
-			if ( strpos( $data['doc']['description'], 'This action is documented in' ) === 0 ) {
-				return false;
-			}
-
-			if ( strpos( $data['doc']['description'], 'This filter is documented in' ) === 0 ) {
-				return false;
-			}
-
-			if ( $data['doc']['description'] === '' && $data['doc']['long_description'] === '' ) {
-				return false;
-			}
-		}
-
 		$hook_id = $this->import_item( $data, $parent_post_id, $import_ignored, [ 'post_type' => $this->post_type_hook ] );
 
 		if ( ! $hook_id ) {
@@ -703,31 +663,8 @@ class Importer {
 			return false;
 		}
 
-		/**
-		 * Filter whether to proceed with adding/updating a prospective import item.
-		 *
-		 * Returning a falsey value to the filter will short-circuit addition of the import item.
-		 *
-		 * @param bool  $display         Whether to proceed with adding/updating the import item. Default true.
-		 * @param array $data            Data
-		 * @param int   $parent_post_id  Optional; post ID of the parent (class or function) this item belongs to. Defaults to zero (no parent).
-		 * @param bool  $import_ignored Optional; defaults to false. If true, functions or classes marked `@ignore` will be imported.
-		 * @param array $arg_overrides   Optional; array of parameters that override the defaults passed to wp_update_post().
-		 */
-		if ( ! apply_filters( 'wp_parser_pre_import_item', true, $data, $parent_post_id, $import_ignored, $arg_overrides ) ) {
-			return false;
-		}
-
 		// Look for an existing post for this item
 		$existing_post_id = $this->get_existing_item( $slug, $post_data['post_type'], $parent_post_id );
-
-		/**
-		 * Filter an import item's post data before it is updated or inserted.
-		 *
-		 * @param array       $post_data        Array of post data.
-		 * @param string|null $existing_post_id ID if the post already exists, null otherwise.
-		 */
-		$post_data = apply_filters( 'wp_parser_import_item_post_data', $post_data, $existing_post_id );
 
 		// Insert/update the item post
 		if ( ! empty( $existing_post_id ) ) {

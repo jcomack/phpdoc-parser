@@ -44,9 +44,6 @@ function the_content() {
 		$after_content .= '<a href="' . $source . '">Source</a>';
 	}
 
-	$before_content = apply_filters( 'wp_parser_before_content', $before_content );
-	$after_content  = apply_filters( 'wp_parser_after_content', $after_content );
-
 	echo $before_content . $content . $after_content;
 }
 
@@ -67,7 +64,7 @@ function get_return_type() {
 		$return_type = [ 'void' ];
 	}
 
-	return apply_filters( 'wp_parser_return_type', $return_type );
+	return $return_type;
 }
 
 /**
@@ -96,7 +93,7 @@ function get_return_desc() {
 		$return_desc = '';
 	}
 
-	return apply_filters( 'wp_parser_return_desc', $return_desc );
+	return $return_desc;
 }
 
 /**
@@ -114,7 +111,7 @@ function the_return_desc() {
 function arguments_have_default_values() {
 	$return = wp_list_filter( get_post_meta( get_the_ID(), '_wp-parser_args', true ), [ 'name' => 'default' ] );
 
-	return apply_filters( 'wp_parser_arguments_have_default_values', ! empty( $return ) );
+	return ! empty( $return );
 }
 
 /**
@@ -128,7 +125,7 @@ function is_function_deprecated() {
 	 *
 	 * @param bool Whether the current function should be considered deprecated.
 	 */
-	return apply_filters( 'wp_parser_is_function_deprecated', is_deprecated() );
+	return is_deprecated();
 }
 
 /**
@@ -142,15 +139,7 @@ function is_deprecated() {
 	$tags       = get_post_meta( get_the_ID(), '_wp-parser_tags', true );
 	$deprecated = wp_list_filter( $tags, [ 'name' => 'deprecated' ] );
 
-	$post_type = get_post_type( get_the_ID() );
-
-	/**
-	 * Filters whether the current element is deprecated.
-	 *
-	 * @param bool   $deprecated Whether the current element should be considered deprecated.
-	 * @param string $post_type  Post type for the current element.
-	 */
-	return apply_filters( 'wp_parser_is_deprecated', ! empty( $deprecated ), $post_type );
+	return ! empty( $deprecated );
 }
 
 /**
@@ -194,7 +183,7 @@ function get_arguments() {
 		$return_args[] = $param;
 	}
 
-	return apply_filters( 'wp_parser_get_arguments', $return_args );
+	return $return_args;
 }
 
 /**
@@ -238,7 +227,7 @@ function get_hook_arguments() {
 		$return_args[] = $param;
 	}
 
-	return apply_filters( 'wp_parser_get_hook_arguments', $return_args );
+	return $return_args;
 }
 
 /**
@@ -265,7 +254,7 @@ function get_prototype() {
 
 	$prototype = sprintf( '<p class="wp-parser-prototype"><code><span class="type">%s</span> %s ( %s )</code></p>', implode( '|', $type ), $name, $friendly_args );
 
-	return apply_filters( 'wp_parser_prototype', $prototype );
+	return $prototype;
 }
 
 /**
@@ -300,7 +289,7 @@ function get_hook_prototype() {
 
 	$prototype = sprintf( '<p class="wp-parser-prototype"><code> %s ( %s )</code></p>', $name, $friendly_args );
 
-	return apply_filters( 'wp_parser_hook_prototype', $prototype );
+	return $prototype;
 }
 
 /**
@@ -309,7 +298,7 @@ function get_hook_prototype() {
  * @return string
  */
 function get_source_link() {
-	$trac_url = apply_filters( 'wp_parser_source_link_base', false );
+	$trac_url = false;
 	if ( empty( $trac_url ) ) {
 		return '';
 	}
@@ -321,7 +310,7 @@ function get_source_link() {
 		$line_num = (int) get_post_meta( get_the_ID(), '_wp-parser_line_num', true );
 
 		// The format here takes the base URL, the term name, and the line number
-		$format = apply_filters( 'wp_parser_source_link_format', '%s%s#L%d' );
+		$format = '%s%s#L%d';
 		// Link to the specific file name and the line number on trac
 		$trac_url = sprintf( $format, $trac_url, $term->name, $line_num );
 	}
