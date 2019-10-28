@@ -599,34 +599,17 @@ class Importer {
 	 * Gets the ID of the post that exists with the passed slug and post type.
 	 * Additionally can be limited by the parent ID.
 	 *
-	 * @param string $slug		The slug of the post to search for.
+	 * @param string $slug		The name of the post to search for.
 	 * @param string $post_type The post type to search for.
-	 * @param int 	 $parent_id The parent id.
 	 *
 	 * @return int The post ID.
 	 */
-	protected function get_existing_item( $slug, $post_type, $parent_id = 0 ) {
-		/** @var wpdb $wpdb */
-		global $wpdb;
+	protected function get_existing_item( $post_name, $post_type ) {
 
-		if ( $post_type === 'wp-parser-hook' ) {
-			return $wpdb->get_var(
-				$q = $wpdb->prepare(
-					"SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type = %s LIMIT 1",
-					$slug,
-					$post_type
-				)
-			);
-		}
+		$post = get_page_by_title( $post_name, OBJECT, $post_type );
+		if (!$post) { return false; }
 
-		return $wpdb->get_var(
-			$q = $wpdb->prepare(
-				"SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND post_parent = %d LIMIT 1",
-				$slug,
-				$post_type,
-				(int) $parent_id
-			)
-		);
+		return $post->ID;
 	}
 
 	/**
@@ -643,10 +626,10 @@ class Importer {
 	 * @return bool|int Post ID of this item, false if any failure.
 	 */
 	public function import_item( array $data, $parent_post_id = 0, $import_ignored = false, array $arg_overrides = [] ) {
-		$is_new_post 		= true;
+		$is_new_post 				= true;
 		$post_needed_update = false;
-		$namespace     		= $this->get_namespace( $data );
-		$slug        		= $this->get_slug_from_namespace( $namespace );
+		$namespace   	  		= $this->get_namespace( $data );
+		$slug        				= $this->get_slug_from_namespace( $namespace );
 
 		$post_data = wp_parse_args(
 			$arg_overrides,
@@ -719,7 +702,7 @@ class Importer {
 		}
 
 		// Look for an existing post for this item
-		$existing_post_id = $this->get_existing_item( $slug, $post_data['post_type'], $parent_post_id );
+		$existing_post_id = $this->get_existing_item( $post_data['post_title'], $post_data['post_type'] );
 
 		/**
 		 * Filter an import item's post data before it is updated or inserted.
