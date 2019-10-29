@@ -228,7 +228,7 @@ class Parser {
 	public function make_args_safe( $args ) {
 		array_walk_recursive( $args, [ $this, 'sanitize_argument' ] );
 
-		return apply_filters( 'wp_parser_make_args_safe', $args );
+		return $args;
 	}
 
 	/**
