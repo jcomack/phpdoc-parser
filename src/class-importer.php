@@ -603,7 +603,7 @@ class Importer {
 	 *
 	 * @return int The post ID.
 	 */
-	protected function get_existing_item( $post_name, $post_type ) {
+	protected function get_existing_item( string $post_name, string $post_type ) {
 
 		$post = get_page_by_title( $post_name, OBJECT, $post_type );
 		if (!$post) { return false; }
