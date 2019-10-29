@@ -320,24 +320,12 @@ class Importer {
 			return;
 		}
 
-		// Detect deprecated file
-		$deprecated_file = false;
-		if ( isset( $file['uses']['functions'] ) ) {
-			$first_function = $file['uses']['functions'][0];
-
-			// If the first function in this file is _deprecated_function
-			if ( $first_function['name'] === '_deprecated_file' ) {
-
-				// Set the deprecated flag to the version number
-				$deprecated_file = $first_function['deprecation_version'];
-			}
-		}
-
 		// Store file meta for later use
 		$this->file_meta = [
-			'docblock'   => $file['file'], // File docblock
-			'term_id'    => $file['path'], // Term name in the file taxonomy is the file name
-			'deprecated' => $deprecated_file, // Deprecation status
+			'docblock'  		 => $file['file'], // File docblock
+			'term_id'   		 => $file['path'], // Term name in the file taxonomy is the file name
+			'plugin_version' => $file['plugin_version'], // The plugin version
+			'deprecated'		 => $this->get_file_deprecation_version($file), // Deprecation version
 		];
 
 		// TODO ensures values are set, but better handled upstream later
@@ -370,6 +358,28 @@ class Importer {
 
 			$this->add_sleep( $count );
 		}
+	}
+
+	/**
+	 * Checks if a file is deprecated, and returns the version if so
+	 * @param  array  	 		$file The file to check
+	 * @return string|bool	The version in which the file was deprecated, or false
+	 */
+	public function get_file_deprecation_version(array $file) {
+
+		// Return early if the file doesn't use functions
+		if (!isset( $file['uses']['functions'] ) ) { return false; }
+
+		// Check that we actually got some functions
+		if (!isset( $file['uses']['functions'][0] ) ) { return false; }
+
+		// Check if the first function in this file is _deprecated_function
+ 		$first_function = $file['uses']['functions'][0];
+		if ( $first_function['name'] === '_deprecated_file' ) {
+			return $first_function['deprecation_version'];
+		}
+
+		return false;
 	}
 
 	/**
