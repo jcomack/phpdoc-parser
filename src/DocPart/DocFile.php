@@ -64,6 +64,7 @@ class DocFile extends DocAbstract {
 	 * @var array
 	 */
 	private $classes;
+
 	/**
 	 * @var array
 	 */
@@ -133,6 +134,7 @@ class DocFile extends DocAbstract {
 			'path'   => $this->relativePath,
 			'root'   => $this->root,
 			'plugin' => $this->plugin->getName(),
+			'plugin_version' => $this->plugin->getVersion(),
 		];
 
 		if ( ! empty( $this->uses ) ) {

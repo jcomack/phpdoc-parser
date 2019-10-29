@@ -177,9 +177,6 @@ class Importer {
 		remove_action( 'transition_post_status', '_update_blog_date_on_post_publish', 10 );
 		remove_action( 'transition_post_status', '__clear_multi_author_cache', 10 );
 
-		delete_option( 'wp_parser_imported_wp_version' );
-		delete_option( 'wp_parser_root_import_dir' );
-
 		// Sanity check -- do the required post types exist?
 		if ( ! post_type_exists( $this->post_type_class ) || ! post_type_exists( $this->post_type_function ) || ! post_type_exists( $this->post_type_hook ) ) {
 			$this->logger->error( sprintf( 'Missing post type; check that "%1$s", "%2$s", and "%3$s" are registered.', $this->post_type_class, $this->post_type_function, $this->post_type_hook ) );
@@ -191,8 +188,6 @@ class Importer {
 			$this->logger->error( sprintf( 'Missing taxonomy; check that "%1$s" is registered.', $this->taxonomy_file ) );
 			exit;
 		}
-
-		$root = '';
 
 		foreach ( $files as $file ) {
 			$this->logger->info(
@@ -207,23 +202,9 @@ class Importer {
 			$file_number++;
 
 			$this->import_file( $file, $skip_sleep, $import_ignored_functions );
-
-			if ( empty( $root ) && ( isset( $file['root'] ) && $file['root'] ) ) {
-				$root = $file['root'];
-			}
-		}
-
-		if ( ! empty( $root ) ) {
-			update_option( 'wp_parser_root_import_dir', $root );
-			$this->logger->info( 'Updated option wp_parser_root_import_dir: ' . $root );
 		}
 
 		$this->log_last_import();
-
-		$wp_version = get_option( 'wp_parser_imported_wp_version' );
-		if ( $wp_version ) {
-			$this->logger->info( 'Updated option wp_parser_imported_wp_version: ' . $wp_version );
-		}
 
 		/**
 		 * Workaround for a WP core bug where hierarchical taxonomy caches are not being cleared
@@ -315,6 +296,7 @@ class Importer {
 	public function import_file( array $file, $skip_sleep = false, $import_ignored = false ) {
 		$this->plugin_term = $this->insert_term( $file['plugin'], $this->taxonomy_plugin );
 		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-directory', plugin_basename( $file['root'] ), true );
+		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-version',  $file['plugin_version'], true );
 
 		if ( ! isset( $this->plugin_name ) || $this->plugin_name !== $file['plugin'] ) {
 			$this->plugin_name = $file['plugin'];
@@ -385,31 +367,36 @@ class Importer {
 			$count++;
 
 			// TODO figure our why are we still doing this
-			if ( ! $skip_sleep && $count % 10 === 0 ) {
-				sleep( 3 );
-			}
+			$this->add_sleep( $count );
 		}
 
 		foreach ( $file['classes'] as $class ) {
 			$this->import_class( $class, $import_ignored );
 			$count++;
 
-			if ( ! $skip_sleep && $count % 10 === 0 ) {
-				sleep( 3 );
-			}
+			$this->add_sleep( $count );
 		}
 
 		foreach ( $file['hooks'] as $hook ) {
 			$this->import_hook( $hook, 0, $import_ignored );
 			$count++;
 
-			if ( ! $skip_sleep && $count % 10 === 0 ) {
-				sleep( 3 );
-			}
+			$this->add_sleep( $count );
 		}
+	}
 
-		if ( $file['path'] === 'wp-includes/version.php' ) {
-			$this->import_version( $file );
+	/**
+	 * Adds a sleep timeout after the amount of processed items is a multitude of 10.
+	 *
+	 * @param int  $count	The amount of processed items.
+	 * @param bool $skip	Whether or not sleeping should be skipped. Defaults to false.
+	 * @param int  $amount  The amount of seconds to sleep. Defaults to 3.
+	 *
+	 * @return void
+	 */
+	protected function add_sleep( int $count, bool $skip = false, int $amount = 3 ) {
+		if ( ! $skip && $count % 10 === 0 ) {
+			sleep( $amount );
 		}
 	}
 
@@ -544,29 +531,6 @@ class Importer {
 		}
 
 		return $method_id;
-	}
-
-	/**
-	 * Updates the 'wp_parser_imported_wp_version' option with the version from wp-includes/version.php.
-	 *
-	 * @param array   $data The data to extract the version from.
-	 *
-	 * @return void
-	 */
-	protected function import_version( $data ) {
-
-		$version_path = $data['root'] . '/' . $data['path'];
-
-		if ( ! is_readable( $version_path ) ) {
-			return;
-		}
-
-		include $version_path;
-
-		if ( isset( $wp_version ) && $wp_version ) {
-			update_option( 'wp_parser_imported_wp_version', $wp_version );
-			$this->logger->info( "\t" . sprintf( 'Updated option wp_parser_imported_wp_version to "%1$s"', $wp_version ) );
-		}
 	}
 
 	/**
@@ -1044,6 +1008,24 @@ class Importer {
 	}
 
 	/**
+	 * Gets the tag's data based on the passed name.
+	 *
+	 * @param array  $tags The tags data set to extract the data from.
+	 * @param string $name The name of the tag to retrieve.
+	 *
+	 * @return array The tags data. Returns an empty array if none could be found.
+	 */
+	protected function get_tags_data( array $tags, string $name ) {
+		$tag_data = wp_list_filter( $tags, [ 'name' => $name ] );
+
+		if ( empty( $tag_data ) ) {
+			$tag_data = wp_list_filter( $this->file_meta['docblock']['tags'], [ 'name' => $name ] );
+		}
+
+		return $tag_data;
+	}
+
+	/**
 	 * Sets the packages for the post based on the passed tag data.
 	 *
 	 * @param int 	$post_id The post ID.
@@ -1055,18 +1037,9 @@ class Importer {
 		$anything_updated = [];
 
 		$packages = [
-			'main' => wp_list_filter( $tags, [ 'name' => 'package' ] ),
-			'sub'  => wp_list_filter( $tags, [ 'name' => 'subpackage' ] ),
+			'main' => $this->get_tags_data( $tags, 'package' ),
+			'sub'  => $this->get_tags_data( $tags, 'subpackage' ),
 		];
-
-		// If the @package/@subpackage is not set by the individual function or class, get it from the file scope
-		if ( empty( $packages['main'] ) ) {
-			$packages['main'] = wp_list_filter( $this->file_meta['docblock']['tags'], [ 'name' => 'package' ] );
-		}
-
-		if ( empty( $packages['sub'] ) ) {
-			$packages['sub'] = wp_list_filter( $this->file_meta['docblock']['tags'], [ 'name' => 'subpackage' ] );
-		}
 
 		$main_package_id  = false;
 		$package_term_ids = [];
