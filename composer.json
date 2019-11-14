@@ -1,5 +1,5 @@
 {
-	"name"       : "Yoast/phpdoc-parser",
+	"name"       : "yoast/phpdoc-parser",
 	"description": "Static code parser for Yoast plugins' source.",
 	"keywords"   : ["wordpress"],
 	"type"       : "wordpress-plugin",
