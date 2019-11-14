@@ -538,9 +538,11 @@ class Importer {
 	 * @return int The post ID.
 	 */
 	protected function get_existing_item( string $post_name, string $post_type ) {
-
 		$post = get_page_by_title( $post_name, OBJECT, $post_type );
-		if (!$post) { return false; }
+
+		if ( ! $post ) {
+			return false;
+		}
 
 		return $post->ID;
 	}
@@ -559,10 +561,10 @@ class Importer {
 	 * @return bool|int Post ID of this item, false if any failure.
 	 */
 	public function import_item( array $data, $parent_post_id = 0, $import_ignored = false, array $arg_overrides = [] ) {
-		$is_new_post 				= true;
+		$is_new_post 		= true;
 		$post_needed_update = false;
-		$namespace   	  		= $this->get_namespace( $data );
-		$slug        				= $this->get_slug_from_namespace( $namespace );
+		$namespace			= $this->get_namespace( $data );
+		$slug        		= $this->get_slug_from_namespace( $namespace );
 
 		$post_data = wp_parse_args(
 			$arg_overrides,
