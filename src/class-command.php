@@ -2,6 +2,7 @@
 
 namespace WP_Parser;
 
+use Tightenco\Collect\Support\Collection;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_Error;
@@ -141,11 +142,11 @@ class Command extends WP_CLI_Command {
 	/**
 	 * Import the PHPDoc $data into WordPress posts and taxonomies
 	 *
-	 * @param array $data
+	 * @param Collection $data
 	 * @param bool  $skip_sleep     If true, the sleep() calls are skipped.
 	 * @param bool  $import_ignored If true, functions marked `@ignore` will be imported.
 	 */
-	protected function _do_import( array $data, $skip_sleep = false, $import_ignored = false ) {
+	protected function _do_import( Collection $data, $skip_sleep = false, $import_ignored = false ) {
 
 		if ( ! wp_get_current_user()->exists() ) {
 			WP_CLI::error( 'Please specify a valid user: --user=<id|login>' );

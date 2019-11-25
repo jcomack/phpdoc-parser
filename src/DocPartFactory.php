@@ -2,6 +2,7 @@
 
 use InvalidArgumentException;
 use Symfony\Component\Finder\Finder;
+use Tightenco\Collect\Support\Collection;
 use WP_Parser\DocPart\DocClass;
 use WP_Parser\DocPart\DocConstant;
 use WP_Parser\DocPart\DocFile;
@@ -34,12 +35,12 @@ class DocPartFactory {
 	 * @param string          $root_directory	The root directory of the files.
 	 * @param PluginInterface $plugin			The plugin associated with the files.
 	 *
-	 * @return array The converted files.
+	 * @return Collection The converted files.
 	 */
 	public static function fromFiles( Finder $files, string $root_directory, PluginInterface $plugin ) {
-		return array_map( function( $file ) use( $root_directory, $plugin ) {
+		return new Collection( array_map( function( $file ) use( $root_directory, $plugin ) {
 			return new DocFile( $file, $root_directory, $plugin );
-		}, iterator_to_array( $files ) );
+		}, iterator_to_array( $files ) ) );
 	}
 
 	/**
