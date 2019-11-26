@@ -215,25 +215,4 @@ class DocClass extends BaseDocPart implements DocPart {
 			$exporter->export_docblock( $class )
 		);
 	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return [
-			'name' => $this->name,
-			'namespace' => $this->namespace,
-			'line' => $this->line,
-			'end_line' => $this->end_line,
-			'final' => $this->final,
-			'abstract' => $this->abstract,
-			'extends' => $this->extends,
-			'implements' => $this->implements,
-			'properties' => $this->properties,
-			'methods' => array_map( function( $method ) { return $method->toArray(); }, $this->methods ),
-			'doc' => $this->getDocblock(),
-		];
-	}
 }

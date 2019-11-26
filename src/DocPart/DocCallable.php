@@ -79,6 +79,15 @@ class DocCallable implements DocPart {
 	}
 
 	/**
+	 * Sets the callable's name.
+	 *
+	 * @param string $name The name to set.
+	 */
+	public function setName( string $name ) {
+		$this->name = $name;
+	}
+
+	/**
 	 * Gets the name.
 	 *
 	 * @return string The name of the callable.
@@ -190,24 +199,5 @@ class DocCallable implements DocPart {
 			$uses,
 			$hooks
 		);
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return [
-			'name' => $this->name,
-			'namespace' => $this->namespace,
-			'aliases' => $this->aliases,
-			'line' => $this->line,
-			'end_line' => $this->end_line,
-			'arguments' => $this->arguments,
-			'doc' => $this->doc,
-			'uses' => $this->uses,
-			'hooks' => array_map( function( $hook ) { return $hook->toArray(); }, $this->hooks ),
-		];
 	}
 }

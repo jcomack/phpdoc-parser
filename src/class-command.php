@@ -112,7 +112,22 @@ class Command extends WP_CLI_Command {
 	 * @return string|array
 	 */
 	protected function _get_phpdoc_data( $path, $format = 'json', $ignore_files = [] ) {
-		$ignore_files = ! empty( $ignore_files ) ? $ignore_files : [ 'vendor', 'vendor_prefixed', 'node_modules', 'tests', 'build' ];
+		$ignore_files = ! empty( $ignore_files ) ? $ignore_files : [
+			'vendor',
+			'vendor_prefixed',
+			'node_modules',
+			'integration-tests',
+			'tests',
+			'build',
+			'config',
+			'grunt',
+			'deploy_keys',
+			'js',
+			'languages',
+			'webpack',
+			'images',
+			'css',
+		];
 
 		WP_CLI::line( sprintf( 'Extracting PHPDoc from %1$s. This may take a few minutes...', $path ) );
 

@@ -76,17 +76,4 @@ class DocConstant implements DocPart {
 			return new self( $item->getName(), $item->getLineNumber(), $item->getValue() );
 		}, $items );
 	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return [
-			'name' => $this->name,
-			'line' => $this->line,
-			'value' => $this->value,
-		];
-	}
 }

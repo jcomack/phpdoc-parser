@@ -46,7 +46,7 @@ class Runner {
 	 * @param Finder $files The files to extract the docblocks from.
 	 *
 	 * @return Collection The extracted docblocks.
-	 */ß
+	 */
 	public function parse_files( Finder $files ) {
 		return DocPartFactory::fromFiles( $files, $this->directory, $this->plugin );
 	}

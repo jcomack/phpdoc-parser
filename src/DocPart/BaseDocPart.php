@@ -4,7 +4,7 @@
  * Class BaseDocPart
  * @package WP_Parser\DocPart
  */
-class BaseDocPart {
+abstract class BaseDocPart {
 
 	/**
 	 * @var string
@@ -36,6 +36,10 @@ class BaseDocPart {
 
 	public function getNamespace() {
 		return $this->namespace;
+	}
+
+	public function getAliases() {
+		return [];
 	}
 
 	/**

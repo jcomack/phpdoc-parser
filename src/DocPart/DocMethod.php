@@ -7,7 +7,7 @@ use WP_Parser\DocCallable;
  * Class DocMethod
  * @package WP_Parser\DocPart
  */
-class DocMethod implements DocPart {
+class DocMethod extends BaseDocPart implements DocPart {
 	/**
 	 * @var DocCallable
 	 */
@@ -43,11 +43,31 @@ class DocMethod implements DocPart {
 	 * @param string      $visibility The visibility of the method.
 	 */
 	public function __construct( DocCallable $callable, bool $final, bool $abstract, bool $static, string $visibility ) {
+		parent::__construct( $callable->getName(), $callable->getNamespace(), $callable->getDoc() );
+
 		$this->callable = $callable;
 		$this->final = $final;
 		$this->abstract = $abstract;
 		$this->visibility = $visibility;
 		$this->static = $static;
+	}
+
+	/**
+	 * Sets the method's name.
+	 *
+	 * @param string $name The name to set.
+	 */
+	public function setName( string $name ) {
+		$this->callable->setName( $name );
+	}
+
+	/**
+	 * Gets the method's name.
+	 *
+	 * @return string The name.
+	 */
+	public function getName(): string {
+		return $this->getCallable()->getName();
 	}
 
 	/**
@@ -57,6 +77,22 @@ class DocMethod implements DocPart {
 	 */
 	public function getCallable() {
 		return $this->callable;
+	}
+
+	public function getArguments() {
+		return $this->getCallable()->getArguments();
+	}
+
+	public function getAliases() {
+		return $this->getCallable()->getAliases();
+	}
+
+	public function getLine() {
+		return $this->getCallable()->getLine();
+	}
+
+	public function getEndLine() {
+		return $this->getCallable()->getEndLine();
 	}
 
 	/**
@@ -118,23 +154,6 @@ class DocMethod implements DocPart {
 			$method->isAbstract(),
 			$method->isStatic(),
 			$method->getVisibility()
-		);
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return array_merge(
-			$this->callable->toArray(),
-			[
-				'final' 	 => $this->final,
-				'abstract' 	 => $this->abstract,
-				'static' 	 => $this->static,
-				'visibility' => $this->visibility,
-			]
 		);
 	}
 }
