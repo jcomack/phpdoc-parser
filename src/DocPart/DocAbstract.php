@@ -49,6 +49,14 @@ abstract class DocAbstract {
 		$this->plugin		= $plugin;
 	}
 
+	public function getPluginName() {
+		return $this->plugin->getName();
+	}
+
+	public function getPluginVersion() {
+		return $this->plugin->getVersion();
+	}
+
 	/**
 	 * Parses the file data.
 	 *
@@ -56,10 +64,11 @@ abstract class DocAbstract {
 	 */
 	abstract protected function parse();
 
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	abstract public function toArray();
+	public function __get( $property ) {
+		if ( property_exists( $this, $property ) ) {
+			return $this->{$property};
+		}
+
+		return null;
+	}
 }

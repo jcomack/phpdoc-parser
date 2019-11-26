@@ -8,7 +8,7 @@ use WP_Parser\Exporter;
  * Class DocClass
  * @package WP_Parser\DocPart
  */
-class DocClass implements DocPart {
+class DocClass extends BaseDocPart implements DocPart {
 
 	/**
 	 * @var string
@@ -61,11 +61,6 @@ class DocClass implements DocPart {
 	private $methods;
 
 	/**
-	 * @var array
-	 */
-	private $doc;
-
-	/**
 	 * DocClass constructor.
 	 *
 	 * @param string $name			The name of the class.
@@ -81,8 +76,8 @@ class DocClass implements DocPart {
 	 * @param array  $doc			The documentation of the class.
 	 */
 	public function __construct( string $name, string $namespace, int $line, int $end_line, bool $final, bool $abstract, string $extends, array $implements, array $properties, array $methods, array $doc ) {
-		$this->name       = $name;
-		$this->namespace  = $namespace;
+		parent::__construct( $name, $namespace, $doc );
+
 		$this->line       = $line;
 		$this->end_line   = $end_line;
 		$this->final      = $final;
@@ -91,25 +86,6 @@ class DocClass implements DocPart {
 		$this->implements = $implements;
 		$this->properties = $properties;
 		$this->methods    = $methods;
-		$this->doc        = $doc;
-	}
-
-	/**
-	 * Gets the name.
-	 *
-	 * @return string The name of the class.
-	 */
-	public function getName() {
-		return $this->name;
-	}
-
-	/**
-	 * Gets the namespace.
-	 *
-	 * @return string The namespace of the class.
-	 */
-	public function getNamespace() {
-		return $this->namespace;
 	}
 
 	/**
@@ -215,15 +191,6 @@ class DocClass implements DocPart {
 	}
 
 	/**
-	 * Gets the documentation.
-	 *
-	 * @return array The documentation for the class.
-	 */
-	public function getDoc() {
-		return $this->doc;
-	}
-
-	/**
 	 * Creates a class from the reflector.
 	 *
 	 * @param ClassReflector $class The class reflector to convert.
@@ -247,26 +214,5 @@ class DocClass implements DocPart {
 			DocPartFactory::fromMethods( $class->getMethods() ),
 			$exporter->export_docblock( $class )
 		);
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return [
-			'name' => $this->name,
-			'namespace' => $this->namespace,
-			'line' => $this->line,
-			'end_line' => $this->end_line,
-			'final' => $this->final,
-			'abstract' => $this->abstract,
-			'extends' => $this->extends,
-			'implements' => $this->implements,
-			'properties' => $this->properties,
-			'methods' => array_map( function( $method ) { return $method->toArray(); }, $this->methods ),
-			'doc' => $this->doc,
-		];
 	}
 }

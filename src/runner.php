@@ -1,6 +1,7 @@
 <?php namespace WP_Parser;
 
 use Symfony\Component\Finder\Finder;
+use Tightenco\Collect\Support\Collection;
 use WP_CLI;
 use WP_Parser\PluginParser\PluginInterface;
 
@@ -44,11 +45,9 @@ class Runner {
 	 *
 	 * @param Finder $files The files to extract the docblocks from.
 	 *
-	 * @return array The extracted docblocks.
+	 * @return Collection The extracted docblocks.
 	 */
 	public function parse_files( Finder $files ) {
-		$parsed_files = DocPartFactory::fromFiles( $files, $this->directory, $this->plugin );
-
-		return array_map( function( $file ) { return $file->toArray(); }, $parsed_files );
+		return DocPartFactory::fromFiles( $files, $this->directory, $this->plugin );
 	}
 }

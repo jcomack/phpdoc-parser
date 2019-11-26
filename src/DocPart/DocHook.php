@@ -7,7 +7,7 @@ use WP_Parser\Hook_Reflector;
  * Class DocHook
  * @package WP_Parser\DocPart
  */
-class DocHook implements DocPart {
+class DocHook extends BaseDocPart implements DocPart {
 	/**
 	 * @var string
 	 */
@@ -49,6 +49,8 @@ class DocHook implements DocPart {
 	 * @param array  $doc		The documentation of the hook.
 	 */
 	public function __construct( string $name, int $line, int $end_line, string $type, array $arguments, array $doc ) {
+		parent::__construct( $name, '', $doc );
+
 		$this->name      = $name;
 		$this->line      = $line;
 		$this->end_line  = $end_line;
@@ -56,6 +58,51 @@ class DocHook implements DocPart {
 		$this->arguments = $arguments;
 		$this->doc       = $doc;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getName(): string {
+		return $this->name;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getLine(): int {
+		return $this->line;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getEndLine(): int {
+		return $this->end_line;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getType(): string {
+		return $this->type;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getArguments(): array {
+		return $this->arguments;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getDoc(): array {
+		return $this->doc;
+	}
+
+
+
 
 	/**
 	 * Creates a hook from the reflector.
@@ -75,21 +122,5 @@ class DocHook implements DocPart {
 			$hook->getArgs(),
 			$exporter->export_docblock( $hook )
 		);
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return [
-			'name' => $this->name,
-			'line' => $this->line,
-			'end_line' => $this->end_line,
-			'type' => $this->type,
-			'arguments' => $this->arguments,
-			'doc' => $this->doc,
-		];
 	}
 }

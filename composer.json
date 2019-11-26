@@ -1,5 +1,5 @@
 {
-	"name"       : "Yoast/phpdoc-parser",
+	"name"       : "yoast/phpdoc-parser",
 	"description": "Static code parser for Yoast plugins' source.",
 	"keywords"   : ["wordpress"],
 	"type"       : "wordpress-plugin",
@@ -22,7 +22,8 @@
 		"scribu/lib-posts-to-posts": "dev-master@dev",
 		"scribu/scb-framework"     : "dev-master@dev",
 		"psr/log"                  : "~1.0",
-		"symfony/finder": "^4.2"
+		"symfony/finder": "^4.2",
+		"tightenco/collect": "^6.5"
 	},
 	"autoload"   : {
 		"classmap": ["src"],

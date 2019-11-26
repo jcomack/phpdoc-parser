@@ -102,10 +102,12 @@ class File_Reflector extends FileReflector {
 
 			// Parse out method calls, so we can export where methods are used.
 			case 'Expr_MethodCall':
+			// Parse out `new Class()` calls as uses of Class::__construct().
+			case 'Expr_New':
 				$method = new Method_Call_Reflector( $node, $this->context );
 
 				// Add it to the list of methods used in this scope.
-				$this->getLocation()->uses['methods'][] = $method;
+				$this->addMethod( $method );
 				break;
 
 			// Parse out method calls, so we can export where methods are used.
@@ -113,15 +115,7 @@ class File_Reflector extends FileReflector {
 				$method = new Static_Method_Call_Reflector( $node, $this->context );
 
 				// Add it to the list of methods used in this scope.
-				$this->getLocation()->uses['methods'][] = $method;
-				break;
-
-			// Parse out `new Class()` calls as uses of Class::__construct().
-			case 'Expr_New':
-				$method = new Method_Call_Reflector( $node, $this->context );
-
-				// Add it to the list of methods used in this scope.
-				$this->getLocation()->uses['methods'][] = $method;
+				$this->addMethod( $method );
 				break;
 		}
 
@@ -247,5 +241,14 @@ class File_Reflector extends FileReflector {
 		return parent::isNodeDocumentable( $node )
 		|| ( $node instanceof PHPParser_Node_Expr_FuncCall
 			&& $this->isFilter( $node ) );
+	}
+
+	/**
+	 * Adds the passed method to the uses stack.
+	 *
+	 * @param Method_Call_Reflector $method The method to add.
+	 */
+	protected function addMethod( Method_Call_Reflector $method ): void {
+		$this->getLocation()->uses['methods'][] = $method;
 	}
 }

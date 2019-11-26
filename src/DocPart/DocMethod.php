@@ -51,12 +51,66 @@ class DocMethod implements DocPart {
 	}
 
 	/**
+	 * Sets the method's name.
+	 *
+	 * @param string $name The name to set.
+	 */
+	public function setName( string $name ) {
+		$this->callable->setName( $name );
+	}
+
+	/**
+	 * Gets the method's name.
+	 *
+	 * @return string The name.
+	 */
+	public function getName(): string {
+		return $this->getCallable()->getName();
+	}
+
+	/**
 	 * Gets the callable instance.
 	 *
 	 * @return DocCallable The callable instance.
 	 */
 	public function getCallable() {
 		return $this->callable;
+	}
+
+	/**
+	 * Gets the associated arguments.
+	 *
+	 * @return array The arguments.
+	 */
+	public function getArguments() {
+		return $this->getCallable()->getArguments();
+	}
+
+	/**
+	 * Gets the associated aliases.
+	 *
+	 * @return array The aliases.
+	 */
+	public function getAliases() {
+		return $this->getCallable()->getAliases();
+	}
+
+	/**
+	 * Gets starting line.
+	 *
+	 * @return int The starting line.
+	 */
+	public function getLine() {
+		return $this->getCallable()->getLine();
+	}
+
+	/**
+	 * Gets the ending line.
+	 *
+	 * @return int The ending line.
+	 */
+	public function getEndLine() {
+		return $this->getCallable()->getEndLine();
 	}
 
 	/**
@@ -118,23 +172,6 @@ class DocMethod implements DocPart {
 			$method->isAbstract(),
 			$method->isStatic(),
 			$method->getVisibility()
-		);
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return array_merge(
-			$this->callable->toArray(),
-			[
-				'final' 	 => $this->final,
-				'abstract' 	 => $this->abstract,
-				'static' 	 => $this->static,
-				'visibility' => $this->visibility,
-			]
 		);
 	}
 }

@@ -7,7 +7,7 @@ use WP_Parser\DocCallable;
  * Class DocFunction
  * @package WP_Parser\DocPart
  */
-class DocFunction implements DocPart {
+class DocFunction extends BaseDocPart implements DocPart {
 
 	/**
 	 * @var DocCallable
@@ -33,6 +33,51 @@ class DocFunction implements DocPart {
 	}
 
 	/**
+	 * Gets the associated hooks.
+	 *
+	 * @return array The hooks.
+	 */
+	public function getHooks() {
+		return $this->getCallable()->getHooks();
+	}
+
+	/**
+	 * Gets the associated arguments.
+	 *
+	 * @return array The arguments.
+	 */
+	public function getArguments() {
+		return $this->getCallable()->getArguments();
+	}
+
+	/**
+	 * Gets the associated aliases.
+	 *
+	 * @return array The aliases.
+	 */
+	public function getAliases() {
+		return $this->getCallable()->getAliases();
+	}
+
+	/**
+	 * Gets starting line.
+	 *
+	 * @return int The starting line.
+	 */
+	public function getLine() {
+		return $this->getCallable()->getLine();
+	}
+
+	/**
+	 * Gets the ending line.
+	 *
+	 * @return int The ending line.
+	 */
+	public function getEndLine() {
+		return $this->getCallable()->getEndLine();
+	}
+
+	/**
 	 * Creates a function from the reflector.
 	 *
 	 * @param FunctionReflector $function The function reflector to convert.
@@ -41,14 +86,5 @@ class DocFunction implements DocPart {
 	 */
 	public static function fromReflector( $function ) {
 		return new self( DocCallable::fromReflector( $function ) );
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return $this->callable->toArray();
 	}
 }

@@ -1,13 +1,14 @@
 <?php namespace WP_Parser;
 
 use phpDocumentor\Reflection\ClassReflector\MethodReflector;
+use WP_Parser\DocPart\BaseDocPart;
 use WP_Parser\DocPart\DocPart;
 
 /**
  * Class DocCallable
  * @package WP_Parser
  */
-class DocCallable implements DocPart {
+class DocCallable extends BaseDocPart implements DocPart {
 	/**
 	 * @var string
 	 */
@@ -67,6 +68,8 @@ class DocCallable implements DocPart {
 	 * @param array  $hooks		The hooks available in the callable.
 	 */
 	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = [], array $hooks = [] ) {
+		parent::__construct( $name, $namespace, $doc );
+
 		$this->name      = $name;
 		$this->namespace = $namespace;
 		$this->aliases   = $aliases;
@@ -76,6 +79,15 @@ class DocCallable implements DocPart {
 		$this->doc       = $doc;
 		$this->uses      = $uses;
 		$this->hooks     = $hooks;
+	}
+
+	/**
+	 * Sets the callable's name.
+	 *
+	 * @param string $name The name to set.
+	 */
+	public function setName( string $name ) {
+		$this->name = $name;
 	}
 
 	/**
@@ -190,24 +202,5 @@ class DocCallable implements DocPart {
 			$uses,
 			$hooks
 		);
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		return [
-			'name' => $this->name,
-			'namespace' => $this->namespace,
-			'aliases' => $this->aliases,
-			'line' => $this->line,
-			'end_line' => $this->end_line,
-			'arguments' => $this->arguments,
-			'doc' => $this->doc,
-			'uses' => $this->uses,
-			'hooks' => array_map( function( $hook ) { return $hook->toArray(); }, $this->hooks ),
-		];
 	}
 }

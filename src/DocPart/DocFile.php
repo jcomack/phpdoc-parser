@@ -58,17 +58,17 @@ class DocFile extends DocAbstract {
 	/**
 	 * @var array
 	 */
-	private $functions;
+	private $functions = [];
 
 	/**
 	 * @var array
 	 */
-	private $classes;
+	private $classes = [];
 
 	/**
 	 * @var array
 	 */
-	private $docblock;
+	private $docblock = [];
 
 	/**
 	 * DocFile constructor.
@@ -87,6 +87,92 @@ class DocFile extends DocAbstract {
 
 		$this->parse();
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getDescription(): string {
+		return $this->description;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getLongDescription(): string {
+		return $this->longDescription;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getTags(): array {
+		return $this->tags;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getUses(): array {
+		return $this->uses;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getIncludes(): array {
+		return $this->includes;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getConstants(): array {
+		return $this->constants;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getHooks(): array {
+		return $this->hooks;
+	}
+
+	/**
+	 * @return Exporter
+	 */
+	public function getExporter(): Exporter {
+		return $this->exporter;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getFunctions(): array {
+		return $this->functions;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getClasses(): array {
+		return $this->classes;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getDocblock(): array {
+		return $this->docblock;
+	}
+
+	public function getRoot() {
+		return $this->root;
+	}
+
+	public function getPath() {
+		return $this->relativePath;
+	}
+
 
 	/**
 	 * Parses the file.
@@ -121,36 +207,5 @@ class DocFile extends DocAbstract {
 
 		$this->functions = DocPartFactory::fromFunctions( $file->getFunctions() );
 		$this->classes 	 = DocPartFactory::fromClasses( $file->getClasses() );
-	}
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray() {
-		$out = [
-			'file'   => $this->docblock,
-			'path'   => $this->relativePath,
-			'root'   => $this->root,
-			'plugin' => $this->plugin->getName(),
-			'plugin_version' => $this->plugin->getVersion(),
-		];
-
-		if ( ! empty( $this->uses ) ) {
-			$out['uses']  = $this->uses;
-		}
-
-		$out['includes']  = array_map( function( $include ) { return $include->toArray(); }, $this->includes );
-		$out['constants'] = array_map( function( $constant ) { return $constant->toArray(); }, $this->constants );
-
-		if ( ! empty( $this->hooks ) ) {
-			$out['hooks'] = array_map( function( $hook ) { return $hook->toArray(); }, $this->hooks );
-		}
-
-		$out['functions'] = array_map( function( $function ) { return $function->toArray(); }, $this->functions );
-		$out['classes']   = array_map( function( $class ) { return $class->toArray(); }, $this->classes );
-
-		return $out;
 	}
 }

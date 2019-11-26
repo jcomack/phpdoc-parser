@@ -16,11 +16,4 @@ interface DocPart {
 	 * @return DocPart The instance.
 	 */
 	public static function fromReflector( $reflector );
-
-	/**
-	 * Converts the object to an array notation.
-	 *
-	 * @return array The array notation of the object.
-	 */
-	public function toArray();
 }

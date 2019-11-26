@@ -3,7 +3,14 @@
 namespace WP_Parser;
 
 use Psr\Log\LoggerInterface;
+use Tightenco\Collect\Support\Collection;
 use WP_Error;
+use WP_Parser\DocPart\DocClass;
+use WP_Parser\DocPart\DocFile;
+use WP_Parser\DocPart\DocFunction;
+use WP_Parser\DocPart\DocHook;
+use WP_Parser\DocPart\DocMethod;
+use WP_Parser\DocPart\DocPart;
 use WP_Parser\Importers\ImportLogger;
 use wpdb;
 
@@ -106,6 +113,12 @@ class Importer {
 	 */
 	private $plugin_term;
 
+	const INSERTED_ITEM_MESSAGE = 'Inserted %1$s "%2$s"';
+	const UPDATED_ITEM_MESSAGE  = 'Updated %1$s "%2$s"';
+	const IGNORED_ITEM_MESSAGE  = 'Skipped importing @ignore-d %1$s "%2$s"';
+	const ERRORED_ITEM_MESSAGE  = 'Problem inserting/updating post for %1$s "%2$s"';
+
+
 	/**
 	 * Constructor. Sets up post type/taxonomy names.
 	 *
@@ -149,13 +162,12 @@ class Importer {
 	/**
 	 * Import the PHPDoc $data into WordPress posts and taxonomies
 	 *
-	 * @param array $files					  The files to import.
-	 * @param bool  $skip_sleep               Optional; defaults to false. If true, the sleep() calls are skipped.
+	 * @param Collection $files					  The files to import.
 	 * @param bool  $import_ignored_functions Optional; defaults to false. If true, functions marked `@ignore` will be imported.
 	 *
 	 * @return void
 	 */
-	public function import( array $files, $skip_sleep = false, $import_ignored_functions = false ) {
+	public function import( Collection $files, $import_ignored_functions = false ) {
 		global $wpdb;
 
 		$time_start = microtime(true);
@@ -164,18 +176,9 @@ class Importer {
 		$this->logger->info( 'Starting import. This will take some time…' );
 
 		$file_number  = 1;
-		$num_of_files = count( $files );
+		$totalFiles = $files->count();
 
-		do_action( 'wp_parser_starting_import' );
-
-		// Defer term counting for performance
-		wp_suspend_cache_invalidation( true );
-		wp_defer_term_counting( true );
-		wp_defer_comment_counting( true );
-
-		// Remove actions for performance
-		remove_action( 'transition_post_status', '_update_blog_date_on_post_publish', 10 );
-		remove_action( 'transition_post_status', '__clear_multi_author_cache', 10 );
+		$this->setupImport();
 
 		// Sanity check -- do the required post types exist?
 		if ( ! post_type_exists( $this->post_type_class ) || ! post_type_exists( $this->post_type_function ) || ! post_type_exists( $this->post_type_hook ) ) {
@@ -189,42 +192,24 @@ class Importer {
 			exit;
 		}
 
-		foreach ( $files as $file ) {
+		$files->each(
+			function( $file ) use ( &$file_number, $totalFiles, $import_ignored_functions ) {
 			$this->logger->info(
 				sprintf(
 					'Processing file %1$s of %2$s "%3$s".',
 					number_format_i18n( $file_number ),
-					number_format_i18n( $num_of_files ),
-					$file['path']
+					number_format_i18n( $totalFiles ),
+					$file->relativePath
 				)
 			);
 
 			$file_number++;
 
-			$this->import_file( $file, $skip_sleep, $import_ignored_functions );
-		}
+			$this->import_file( $file, $import_ignored_functions );
+		} );
 
 		$this->log_last_import();
-
-		/**
-		 * Workaround for a WP core bug where hierarchical taxonomy caches are not being cleared
-		 *
-		 * https://core.trac.wordpress.org/ticket/14485
-		 * http://wordpress.stackexchange.com/questions/8357/inserting-terms-in-an-hierarchical-taxonomy
-		 */
-		delete_option( "{$this->taxonomy_package}_children" );
-		delete_option( "{$this->taxonomy_since_version}_children" );
-
-		/**
-		 * Action at the end of a complete import
-		 */
-		do_action( 'wp_parser_ending_import' );
-
-		// Start counting again
-		wp_defer_term_counting( false );
-		wp_suspend_cache_invalidation( false );
-		wp_cache_flush();
-		wp_defer_comment_counting( false );
+		$this->teardownImport();
 
 		$time_end = microtime( true );
 		$time = $time_end - $time_start;
@@ -287,32 +272,35 @@ class Importer {
 	/**
 	 * For a specific file, go through and import the file, functions, and classes.
 	 *
-	 * @param array $file
-	 * @param bool  $skip_sleep     Optional; defaults to false. If true, the sleep() calls are skipped.
+	 * @param DocFile $file
 	 * @param bool  $import_ignored Optional; defaults to false. If true, functions and classes marked `@ignore` will be imported.
 	 *
 	 * @return void
 	 */
-	public function import_file( array $file, $skip_sleep = false, $import_ignored = false ) {
-		$this->plugin_term = $this->insert_term( $file['plugin'], $this->taxonomy_plugin );
-		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-directory', plugin_basename( $file['root'] ), true );
-		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-version',  $file['plugin_version'], true );
+	public function import_file( DocFile $file, $import_ignored = false ) {
+		$this->plugin_term = $this->insert_term( $file->getPluginName(), $this->taxonomy_plugin );
 
-		if ( ! isset( $this->plugin_name ) || $this->plugin_name !== $file['plugin'] ) {
-			$this->plugin_name = $file['plugin'];
+		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-directory', plugin_basename( $file->getRoot() ), true );
+		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-version',  $file->getPluginVersion(), true );
+
+		// The path to the file.
+		$path = $file->getPath();
+
+		if ( ! isset( $this->plugin_name ) || $this->plugin_name !== $file->getPluginName() ) {
+			$this->plugin_name = $file->getPluginName();
 		}
 
 		// Maybe add this file to the file taxonomy
-		$slug = sanitize_title( str_replace( '/', '_', $file['path'] ) );
+		$slug = sanitize_title( str_replace( '/', '_', $path ) );
 
-		$term = $this->insert_term( $file['path'], $this->taxonomy_file, [ 'slug' => $slug ] );
+		$term = $this->insert_term( $path, $this->taxonomy_file, [ 'slug' => $slug ] );
 
 		if ( is_wp_error( $term ) ) {
 			$this->logger->stash_error(
 				sprintf(
 					'Problem creating file tax item "%1$s" for %2$s: %3$s',
 					$slug,
-					$file['path'],
+					$path,
 					$term->get_error_message()
 				)
 			);
@@ -322,59 +310,42 @@ class Importer {
 
 		// Store file meta for later use
 		$this->file_meta = [
-			'docblock'  		 => $file['file'], // File docblock
-			'term_id'   		 => $file['path'], // Term name in the file taxonomy is the file name
-			'plugin_version' => $file['plugin_version'], // The plugin version
-			'deprecated'		 => $this->get_file_deprecation_version($file), // Deprecation version
+			'docblock'  	 => $file->getDocBlock(), // File docblock
+			'term_id'   	 => $path, // Term name in the file taxonomy is the file name
+			'plugin_version' => $file->getPluginVersion(), // The plugin version
+			'deprecated'	 => $this->get_file_deprecation_version( $file ), // Deprecation version
 		];
 
-		// TODO ensures values are set, but better handled upstream later
-		$file = array_merge( [
-			'functions' => [],
-			'classes'   => [],
-			'hooks'     => [],
-		], $file );
-
-		$count = 0;
-
-		foreach ( $file['functions'] as $function ) {
+		foreach ( $file->getFunctions() as $function ) {
 			$this->import_function( $function, 0, $import_ignored );
-			$count++;
-
-			// TODO figure our why are we still doing this
-			$this->add_sleep( $count );
 		}
 
-		foreach ( $file['classes'] as $class ) {
+		foreach ( $file->getClasses() as $class ) {
 			$this->import_class( $class, $import_ignored );
-			$count++;
-
-			$this->add_sleep( $count );
 		}
 
-		foreach ( $file['hooks'] as $hook ) {
+		foreach ( $file->getHooks() as $hook ) {
 			$this->import_hook( $hook, 0, $import_ignored );
-			$count++;
-
-			$this->add_sleep( $count );
 		}
 	}
 
 	/**
 	 * Checks if a file is deprecated, and returns the version if so
-	 * @param  array  	 		$file The file to check
+	 * @param  DocFile  	 		$file The file to check
 	 * @return string|bool	The version in which the file was deprecated, or false
 	 */
-	public function get_file_deprecation_version(array $file) {
+	public function get_file_deprecation_version( $file ) {
+
+		$uses = $file->getUses();
 
 		// Return early if the file doesn't use functions
-		if (!isset( $file['uses']['functions'] ) ) { return false; }
-
-		// Check that we actually got some functions
-		if (!isset( $file['uses']['functions'][0] ) ) { return false; }
+		if ( ! isset( $uses['functions'] ) || ! isset( $uses['functions'][0] ) ) {
+			return false;
+		}
 
 		// Check if the first function in this file is _deprecated_function
- 		$first_function = $file['uses']['functions'][0];
+ 		$first_function = $uses['functions'][0];
+
 		if ( $first_function['name'] === '_deprecated_file' ) {
 			return $first_function['deprecation_version'];
 		}
@@ -383,33 +354,18 @@ class Importer {
 	}
 
 	/**
-	 * Adds a sleep timeout after the amount of processed items is a multitude of 10.
-	 *
-	 * @param int  $count	The amount of processed items.
-	 * @param bool $skip	Whether or not sleeping should be skipped. Defaults to false.
-	 * @param int  $amount  The amount of seconds to sleep. Defaults to 3.
-	 *
-	 * @return void
-	 */
-	protected function add_sleep( int $count, bool $skip = false, int $amount = 3 ) {
-		if ( ! $skip && $count % 10 === 0 ) {
-			sleep( $amount );
-		}
-	}
-
-	/**
 	 * Create a post for a function.
 	 *
-	 * @param array $data           The function data.
+	 * @param DocFunction $data           The function data.
 	 * @param int   $parent_post_id Optional; post ID of the parent (class or function) this item belongs to. Defaults to zero (no parent).
 	 * @param bool  $import_ignored Optional; defaults to false. If true, functions marked `@ignore` will be imported.
 	 *
 	 * @return void Post ID of this function, false if any failure.
 	 */
-	public function import_function( array $data, $parent_post_id = 0, $import_ignored = false ) {
+	public function import_function( DocFunction $data, $parent_post_id = 0, $import_ignored = false ) {
 		$function_id = $this->import_item( $data, $parent_post_id, $import_ignored );
 
-		foreach ( $data['hooks'] as $hook ) {
+		foreach ( $data->getHooks() as $hook ) {
 			$this->import_hook( $hook, $function_id, $import_ignored );
 		}
 	}
@@ -417,20 +373,20 @@ class Importer {
 	/**
 	 * Create a post for a hook
 	 *
-	 * @param array $data           The hook data.
+	 * @param DocHook $data           The hook data.
 	 * @param int   $parent_post_id Optional; post ID of the parent (function) this item belongs to. Defaults to zero (no parent).
 	 * @param bool  $import_ignored Optional; defaults to false. If true, hooks marked `@ignore` will be imported.
 	 *
 	 * @return bool|int Post ID of this hook, false if any failure.
 	 */
-	public function import_hook( array $data, $parent_post_id = 0, $import_ignored = false ) {
+	public function import_hook( DocHook $data, $parent_post_id = 0, $import_ignored = false ) {
 		$hook_id = $this->import_item( $data, $parent_post_id, $import_ignored, [ 'post_type' => $this->post_type_hook ] );
 
 		if ( ! $hook_id ) {
 			return false;
 		}
 
-		update_post_meta( $hook_id, '_wp-parser_hook_type', $data['type'] );
+		update_post_meta( $hook_id, '_wp-parser_hook_type', $data->getType() );
 
 		return $hook_id;
 	}
@@ -438,13 +394,12 @@ class Importer {
 	/**
 	 * Create a post for a class
 	 *
-	 * @param array $data           The class data.
+	 * @param DocClass $data           The class data.
 	 * @param bool  $import_ignored Optional; defaults to false. If true, functions marked `@ignore` will be imported.
 	 *
 	 * @return bool|int Post ID of this function, false if any failure.
 	 */
-	protected function import_class( array $data, $import_ignored = false ) {
-
+	protected function import_class( DocClass $data, $import_ignored = false ) {
 		// Insert this class
 		$class_id = $this->import_item( $data, 0, $import_ignored, [ 'post_type' => $this->post_type_class ] );
 
@@ -453,17 +408,15 @@ class Importer {
 		}
 
 		// Set class-specific meta
-		update_post_meta( $class_id, '_wp-parser_final', (string) $data['final'] );
-		update_post_meta( $class_id, '_wp-parser_abstract', (string) $data['abstract'] );
-		update_post_meta( $class_id, '_wp-parser_extends', $data['extends'] );
-		update_post_meta( $class_id, '_wp-parser_implements', $data['implements'] );
-		update_post_meta( $class_id, '_wp-parser_properties', $data['properties'] );
+		update_post_meta( $class_id, '_wp-parser_final', 		(string) $data->isFinal() );
+		update_post_meta( $class_id, '_wp-parser_abstract', 	(string) $data->isAbstract() );
+		update_post_meta( $class_id, '_wp-parser_extends', 		$data->getExtends() );
+		update_post_meta( $class_id, '_wp-parser_implements', 	$data->getImplements() );
+		update_post_meta( $class_id, '_wp-parser_properties', 	$data->getProperties() );
 
 		// Now add the methods
-		foreach ( $data['methods'] as $method ) {
-			// Namespace method names with the class name
-			$method['name'] = $data['name'] . '::' . $method['name'];
-			$this->import_method( $method, $class_id, $import_ignored );
+		foreach ( $data->getMethods() as $method ) {
+			$this->import_method( $data->getName(), $method, $class_id, $import_ignored );
 		}
 
 		return $class_id;
@@ -472,13 +425,16 @@ class Importer {
 	/**
 	 * Create a post for a class method.
 	 *
-	 * @param array $data           The method data.
+	 * @param string $parent           The parent class.
+	 * @param DocMethod $data          The method data.
 	 * @param int   $parent_post_id Post ID of the parent (class) this method belongs to.
 	 * @param bool  $import_ignored Defaults to false. If true, functions marked `@ignore` will be imported.
 	 *
 	 * @return bool|int Post ID of this function, false if any failure.
 	 */
-	protected function import_method( array $data, $parent_post_id = 0, $import_ignored = false ) {
+	protected function import_method( string $parent, DocMethod $data, $parent_post_id = 0, $import_ignored = false ) {
+		// Namespace method names with the class name
+		$data->setName( $parent . '::' . $data->getName() );
 
 		// Insert this method.
 		$method_id = $this->import_item( $data, $parent_post_id, $import_ignored, [ 'post_type' => $this->post_type_method ] );
@@ -488,14 +444,14 @@ class Importer {
 		}
 
 		// Set method-specific meta.
-		update_post_meta( $method_id, '_wp-parser_final', (string) $data['final'] );
-		update_post_meta( $method_id, '_wp-parser_abstract', (string) $data['abstract'] );
-		update_post_meta( $method_id, '_wp-parser_static', (string) $data['static'] );
-		update_post_meta( $method_id, '_wp-parser_visibility', $data['visibility'] );
+		update_post_meta( $method_id, '_wp-parser_final', 		$data->isFinal() );
+		update_post_meta( $method_id, '_wp-parser_abstract', 	$data->isAbstract() );
+		update_post_meta( $method_id, '_wp-parser_static', 		$data->isStatic() );
+		update_post_meta( $method_id, '_wp-parser_visibility', 	$data->getVisibility() );
 
 		// Now add the hooks.
-		if ( ! empty( $data['hooks'] ) ) {
-			foreach ( $data['hooks'] as $hook ) {
+		if ( ! empty( $data->getHooks() ) ) {
+			foreach ( $data->getHooks() as $hook ) {
 				$this->import_hook( $hook, $method_id, $import_ignored );
 			}
 		}
@@ -504,18 +460,25 @@ class Importer {
 	}
 
 	/**
-	 * Gets the namespace.
+	 * Formats the namespace.
 	 *
-	 * @param array $data The dataset to get the namespace from.
+	 * @param DocPart $data The docpart to get the namespace from.
 	 *
 	 * @return string The namespace.
 	 */
-	private function get_namespace( $data ) {
-		if ( empty( $data['namespace'] ) || $data['namespace'] === 'global' ) {
-			return $data['name'];
+	private function format_namespace( DocPart $data ) {
+		if ( ! method_exists( $data, 'getNamespace' ) ) {
+			return $data->getName();
 		}
 
-		return $data['namespace'] . '\\' . $data['name'];
+		// Only classes have this?
+		$namespace = $data->getNamespace();
+
+		if ( empty( $namespace ) || $namespace === 'global' ) {
+			return $data->getName();
+		}
+
+		return $namespace . '\\' . $data->getName();
 	}
 
 	/**
@@ -538,11 +501,13 @@ class Importer {
 	 * @return int The post ID.
 	 */
 	protected function get_existing_item( string $post_name, string $post_type ) {
-
 		$post = get_page_by_title( $post_name, OBJECT, $post_type );
-		if (!$post) { return false; }
 
-		return $post->ID;
+		if ( ! $post ) {
+			return 0;
+		}
+
+		return (int) $post->ID;
 	}
 
 	/**
@@ -551,100 +516,75 @@ class Importer {
 	 * Anything that needs to be dealt identically for functions or methods should go in this function.
 	 * Anything more specific should go in either import_function() or import_class() as appropriate.
 	 *
-	 * @param array $data           Data.
+	 * @param DocPart $data           Data.
 	 * @param int   $parent_post_id Optional; post ID of the parent (class or function) this item belongs to. Defaults to zero (no parent).
 	 * @param bool  $import_ignored Optional; defaults to false. If true, functions or classes marked `@ignore` will be imported.
 	 * @param array $arg_overrides  Optional; array of parameters that override the defaults passed to wp_update_post().
 	 *
 	 * @return bool|int Post ID of this item, false if any failure.
 	 */
-	public function import_item( array $data, $parent_post_id = 0, $import_ignored = false, array $arg_overrides = [] ) {
-		$is_new_post 				= true;
+	public function import_item( DocPart $data, $parent_post_id = 0, $import_ignored = false, array $arg_overrides = [] ) {
+		$is_new_post 		= true;
 		$post_needed_update = false;
-		$namespace   	  		= $this->get_namespace( $data );
-		$slug        				= $this->get_slug_from_namespace( $namespace );
+		$namespace			= $this->format_namespace( $data );
+		$slug        		= $this->get_slug_from_namespace( $namespace );
+
+		$doc = $data->getDocblock();
 
 		$post_data = wp_parse_args(
 			$arg_overrides,
 			[
-				'post_content' => $data['doc']['long_description'],
-				'post_excerpt' => $data['doc']['description'],
+				'post_content' => $doc['long_description'],
+				'post_excerpt' => $doc['description'],
 				'post_name'    => $slug,
 				'post_parent'  => (int) $parent_post_id,
 				'post_status'  => 'publish',
-				'post_title'   => $data['name'],
+				'post_title'   => $data->getName(),
 				'post_type'    => $this->post_type_function,
 			]
 		);
 
-		// The tags associated with the item.
-		$tags = $data['doc']['tags'];
-
 		// Don't import items marked `@ignore` unless explicitly requested. See https://github.com/WordPress/phpdoc-parser/issues/16
-		if ( ! $import_ignored && wp_list_filter( $tags, [ 'name' => 'ignore' ] ) ) {
-
-			switch ( $post_data['post_type'] ) {
-				case $this->post_type_class:
-					$this->logger->info(
-						sprintf( 'Skipped importing @ignore-d class "%1$s"', $namespace ),
-						1
-					);
-					break;
-
-				case $this->post_type_method:
-					$this->logger->info(
-						sprintf( 'Skipped importing @ignore-d method "%1$s"', $namespace ),
-						2
-					);
-					break;
-
-				case $this->post_type_hook:
-					$this->logger->info(
-						sprintf( 'Skipped importing @ignore-d hook "%1$s"', $namespace ),
-						( $parent_post_id ) ? 2 : 1
-					);
-					break;
-
-				default:
-					$this->logger->info(
-						sprintf( 'Skipped importing @ignore-d function "%1$s"', $namespace ),
-						1
-					);
-			}
+		if ( ! $import_ignored && $data->getIgnored() ) {
+			$this->logItem(
+				self::IGNORED_ITEM_MESSAGE,
+				$post_data['post_type'],
+				$namespace,
+				( $parent_post_id || $post_data['post_type'] === $this->post_type_method ) ? 2 : 1
+			);
 
 			return false;
 		}
 
-		if ( wp_list_filter( $tags, [ 'name' => 'ignore' ] ) ) {
+		if ( $data->getIgnored() ) {
 			return false;
 		}
 
 		// Look for an existing post for this item
 		$existing_post_id = $this->get_existing_item( $post_data['post_title'], $post_data['post_type'] );
 
+		// If duplicate
+		if ( ! empty( $existing_post_id ) && $this->has_potential_duplicates( $existing_post_id ) ) {
+			$this->updateDuplicate( $existing_post_id, $data );
+
+			return false;
+		}
+
 		// Insert/update the item post
 		if ( ! empty( $existing_post_id ) ) {
 			$is_new_post = false;
-			$post_id 	 = $post_data['ID'] = (int) $existing_post_id;
+			$post_id 	 	 = $existing_post_id;
+			$post_data['ID'] = $post_id;
 
-			// Determine whether we're dealing with a conflict between Free and Premium
-			$potential_duplicates = $this->check_for_potential_duplicates( $post_data );
-
-			// If code is duplicate (i.e. already existing), but the plugin name is different, create the plugin taxonomy and assign it. Then skip out.
-			if ( $potential_duplicates ) {
-				$this->logger->info( 'Skipping ' . $data['name'] . ' as it\'s duplicate' );
-				$this->assign_additional_plugin( $post_id, $this->plugin_name );
-				$this->_set_namespaces( $post_id, $data );
-
-				return false;
-			}
-
-			$post_needed_update = $this->post_needs_update( $post_data, $existing_post_id );
+			$post_needed_update = $this->post_needs_update( $post_data, $post_id );
 
 			if ( $post_needed_update ) {
 				$post_id = $this->update_post( $post_data );
 			}
-		} else {
+		}
+
+		// New post
+		if ( empty( $existing_post_id ) ) {
 			$post_id = $this->insert_post( $post_data );
 
 			// Record the plugin if there is one.
@@ -652,94 +592,29 @@ class Importer {
 			$this->_set_namespaces( $post_id, $data );
 		}
 
-		if ( ! $post_id || is_wp_error( $post_id ) ) {
-			switch ( $post_data['post_type'] ) {
-				case $this->post_type_class:
-					$this->log_error_message( 'class', $namespace, $post_id );
-					break;
-
-				case $this->post_type_method:
-					$this->log_error_message( 'method', $namespace, $post_id, 2 );
-					break;
-
-				case $this->post_type_hook:
-					$this->log_error_message( 'hook', $namespace, $post_id, ( $parent_post_id ) ? 2 : 1 );
-					break;
-
-				default:
-					$this->log_error_message( 'function', $namespace, $post_id );
-			}
+		if ( ! isset( $post_id ) || ! $post_id || is_wp_error( $post_id ) ) {
+			$this->logErroredItem(
+				$post_data['post_type'],
+				$namespace,
+				( $parent_post_id ) ? 2 : 1
+			);
 
 			return false;
 		}
 
-		$anything_updated = [];
-
-		// If the item has @since markup, assign the taxonomy
-		$anything_updated = array_merge(
-			$anything_updated,
-			$this->set_since_versions( $post_id, $tags )
-		);
-
-		$anything_updated = array_merge(
-			$anything_updated,
-			$this->set_packages( $post_id, $tags )
-		);
-
-		// Set other taxonomy and post meta to use in the theme templates
-		$added_item = did_action( 'added_term_relationship' );
-		wp_set_object_terms( $post_id, $this->file_meta['term_id'], $this->taxonomy_file );
-
-		if ( did_action( 'added_term_relationship' ) > $added_item ) {
-			$anything_updated[] = true;
-		}
-
-		// If the file is deprecated do something
-		if ( ! empty( $this->file_meta['deprecated'] ) ) {
-			$tags['deprecated'] = $this->file_meta['deprecated'];
-		}
-
-		if ( $post_data['post_type'] !== $this->post_type_class ) {
-			$anything_updated[] = update_post_meta( $post_id, '_wp-parser_args', $data['arguments'] );
-		}
-
-		// If the post type is using namespace aliases, record them.
-		if ( ! empty( $data['aliases'] ) ) {
-			$anything_updated[] = update_post_meta( $post_id, '_wp_parser_aliases', (array) $data['aliases'] );
-		}
-
-		// Record the namespace if there is one.
-		if ( ! empty( $data['namespace'] ) ) {
-			$anything_updated[] = update_post_meta( $post_id, '_wp_parser_namespace', (string) addslashes( $data['namespace'] ) );
-		}
-
-		$anything_updated[] = update_post_meta( $post_id, '_wp-parser_line_num', (string) $data['line'] );
-		$anything_updated[] = update_post_meta( $post_id, '_wp-parser_end_line_num', (string) $data['end_line'] );
-		$anything_updated[] = update_post_meta( $post_id, '_wp-parser_tags', $tags );
+		$anything_updated = $this->updateMeta( $data, $post_id, $post_data );
 
 		// If the post didn't need to be updated, but meta or tax changed, update it to bump last modified.
 		if ( ! $is_new_post && ! $post_needed_update && array_filter( $anything_updated ) ) {
 			wp_update_post( wp_slash( $post_data ), true );
 		}
 
-		$action = $is_new_post ? 'Imported' : 'Updated';
-
-		switch ( $post_data['post_type'] ) {
-			case $this->post_type_class:
-				$this->logger->info( sprintf( '%1$s class "%2$s"', $action, $namespace ), 1 );
-				break;
-
-			case $this->post_type_hook:
-				$this->logger->info( sprintf( '%1$s hook "%2$s"', $action, $namespace ), ( $parent_post_id ) ? 2 : 1 );
-				break;
-
-			case $this->post_type_method:
-				$this->logger->info( sprintf( '%1$s method "%2$s"', $action, $namespace ), 2 );
-				break;
-
-			default:
-				$this->logger->info( sprintf( '%1$s function "%2$s"', $action, $namespace ), 1 );
-		}
+		$this->logParsedItem(
+			$is_new_post,
+			$post_data['post_type'],
+			$namespace,
+			( $parent_post_id || $post_data['post_type'] === $this->post_type_method ) ? 2 : 1
+		);
 
 		/**
 		 * Action at the end of importing an item.
@@ -751,6 +626,19 @@ class Importer {
 		do_action( 'wp_parser_import_item', $post_id, $data, $post_data );
 
 		return $post_id;
+	}
+
+	/**
+	 * Updates a 'duplicate' item (i.e. Yoast SEO and Yoast SEO Premium).
+	 *
+	 * @param int     $id	The ID of the item that is a duplicate.
+	 * @param DocPart $data The data to update some settings with.
+	 */
+	protected function updateDuplicate( int $id, DocPart $data ) {
+		$this->logger->info( 'Skipping ' . $data->getName() . ' as it\'s duplicate' );
+
+		$this->assign_additional_plugin( $id, $this->plugin_name );
+		$this->_set_namespaces( $id, $data );
 	}
 
 	/**
@@ -782,15 +670,15 @@ class Importer {
 	 * and then adds the item being processed to each of the terms in that tree.
 	 *
 	 * @param int   $post_id The ID of the post item being processed.
-	 * @param array $data	 The data.
+	 * @param DocPart $data	 The data.
 	 *
 	 * @return void
 	 */
-	protected function _set_namespaces( $post_id, $data ) {
+	protected function _set_namespaces( $post_id, DocPart $data ) {
 		$ns_term  = false;
 		$ns_terms = [];
 
-		$namespaces = ( ! empty( $data['namespace'] ) ) ? explode( '\\', $data['namespace'] ) : [];
+		$namespaces = ( ! empty( $data->getNamespace() ) ) ? explode( '\\', $data->getNamespace() ) : [];
 
 		if ( count( $namespaces ) === 0 ) {
 			return;
@@ -818,6 +706,7 @@ class Importer {
 			wp_set_object_terms( $post_id, $ns_terms, $this->taxonomy_namespace );
 
 			if ( did_action( 'added_term_relationship' ) > $added_term_relationship ) {
+				// TODO: Move this.
 				$this->anything_updated[] = true;
 			}
 		}
@@ -842,19 +731,23 @@ class Importer {
 	/**
 	 * Checks if there's a potential duplicate entry, based on the post ID.
 	 *
-	 * @param array $post_data The post data to check.
+	 * @param int $id The post ID to check.
 	 *
 	 * @return bool Whether or not there are potential duplicates.
 	 */
-	protected function check_for_potential_duplicates( $post_data ) {
-		$associated_terms = $this->get_plugin_terms_for_post( $post_data['ID'] );
+	protected function has_potential_duplicates( $id ) {
+		$associated_terms = $this->get_plugin_terms_for_post( $id );
 
 		if ( empty( $this->plugin_name ) || in_array( $this->plugin_name, $associated_terms, true ) ) {
 			return false;
 		}
 
-		if ( ( $this->plugin_name === 'Yoast SEO' && in_array( 'Yoast SEO Premium', $associated_terms, true ) || ( $this->plugin_name === 'Yoast SEO Premium' && in_array( 'Yoast SEO', $associated_terms, true ) ) ) ) {
-			return true;
+		if ( $this->plugin_name === 'Yoast SEO' ) {
+			return in_array( 'Yoast SEO Premium', $associated_terms, true );
+		}
+
+		if ( $this->plugin_name === 'Yoast SEO Premium' ) {
+			return in_array( 'Yoast SEO', $associated_terms, true );
 		}
 
 		return false;
@@ -877,20 +770,12 @@ class Importer {
 	 *
 	 * @param string $type		  The type.
 	 * @param string $namespace	  The namespace.
-	 * @param int 	 $post_id 	  The post ID.
 	 * @param int 	 $indentation The amount of indentation to use.
 	 *
 	 * @return void
 	 */
-	protected function log_error_message( $type, $namespace, $post_id, $indentation = 1 ) {
-		$this->logger->stash_error(
-			sprintf(
-				'Problem inserting/updating post for %1$s "%2$s"',
-				$type,
-				$namespace,
-				$post_id->get_error_message() ),
-			$indentation
-		);
+	protected function log_error_message( $type, $namespace, $indentation = 1 ) {
+		$this->logger->stash_error( sprintf( self::ERRORED_ITEM_MESSAGE, $type, $namespace ), $indentation );
 	}
 
 	/**
@@ -1029,4 +914,155 @@ class Importer {
 	protected function assign_additional_plugin( $post_id, $plugin ) {
 		return wp_set_object_terms( $post_id, $plugin, $this->taxonomy_plugin, true );
 	}
+
+	/**
+	 * Sets some global settings pre-import.
+	 */
+	protected function setupImport() {
+		do_action( 'wp_parser_starting_import' );
+
+		// Defer term counting for performance
+		wp_suspend_cache_invalidation( true );
+		wp_defer_term_counting( true );
+		wp_defer_comment_counting( true );
+
+		// Remove actions for performance
+		remove_action( 'transition_post_status', '_update_blog_date_on_post_publish', 10 );
+		remove_action( 'transition_post_status', '__clear_multi_author_cache', 10 );
+	}
+
+	/**
+	 * Tears down any global settings changed pre-import.
+	 */
+	protected function teardownImport() {
+		/**
+		 * Workaround for a WP core bug where hierarchical taxonomy caches are not being cleared
+		 *
+		 * https://core.trac.wordpress.org/ticket/14485
+		 * http://wordpress.stackexchange.com/questions/8357/inserting-terms-in-an-hierarchical-taxonomy
+		 */
+		delete_option( "{$this->taxonomy_package}_children" );
+		delete_option( "{$this->taxonomy_since_version}_children" );
+
+		/**
+		 * Action at the end of a complete import
+		 */
+		do_action( 'wp_parser_ending_import' );
+
+		// Start counting again
+		wp_defer_term_counting( false );
+		wp_suspend_cache_invalidation( false );
+		wp_cache_flush();
+		wp_defer_comment_counting( false );
+	}
+
+	/**
+	 * Logs the inserted or updated item.
+	 *
+	 * @param bool 	 $is_new_post Whether or not the item is a new post.
+	 * @param string $post_type	  The post type of the item that was parsed.
+	 * @param string $namespace   The namespace of the item that was parsed.
+	 * @param int    $indentation The amount of indentation to apply.
+	 */
+	protected function logParsedItem( bool $is_new_post, string $post_type, string $namespace, int $indentation = 1 ) {
+		if ( $is_new_post ) {
+			$this->logItem( self::INSERTED_ITEM_MESSAGE, $post_type, $namespace, $indentation );
+
+			return;
+		}
+
+		$this->logItem( self::UPDATED_ITEM_MESSAGE, $post_type, $namespace, $indentation );
+	}
+
+	/**
+	 * Logs the errored item.
+	 *
+	 * @param string $post_type	The post type of the item that was skipped.
+	 * @param string $namespace The namespace of the item that was skipped.
+	 * @param int    $indentation The amount of indentation to apply.
+	 */
+	protected function logErroredItem( string $post_type, string $namespace, int $indentation = 1 ) {
+		switch ( $post_type ) {
+			case $this->post_type_class:
+				$this->log_error_message( 'class', $namespace );
+				break;
+
+			case $this->post_type_method:
+				$this->log_error_message( 'method', $namespace, $indentation );
+				break;
+
+			case $this->post_type_hook:
+				$this->log_error_message( 'hook', $namespace, $indentation );
+				break;
+
+			default:
+				$this->log_error_message( 'function', $namespace );
+		}
+	}
+
+	protected function logItem( string $message, string $postType, string $name, int $indentation = 1 ) {
+		$postTypeMappings = [
+			$this->post_type_class		=> 'class',
+			$this->post_type_method 	=> 'method',
+			$this->post_type_hook 		=> 'hook',
+			$this->post_type_function 	=> 'function',
+		];
+
+		if ( ! array_key_exists( $postType, $postTypeMappings ) ) {
+			$postType = $this->post_type_function;
+		}
+
+		$this->logger->info( sprintf( $message, $postTypeMappings[$postType], $name ), $indentation );
+	}
+
+	/**
+	 * Updates various meta items.
+	 *
+	 * @param DocPart 	$data		The data to update the meta with.
+	 * @param int     	$post_id	The ID of the item.
+	 * @param array 	$post_data	The post data.
+	 *
+	 * @return array The updated items.
+	 */
+	protected function updateMeta( DocPart $data, int $post_id, $post_data ): array {
+		$anything_updated = [];
+		$tags = $data->getTags();
+
+		// If the item has @since markup, assign the taxonomy
+		$anything_updated = array_merge( $anything_updated, $this->set_since_versions( $post_id, $tags ) );
+		$anything_updated = array_merge( $anything_updated, $this->set_packages( $post_id, $tags ) );
+
+		// Set other taxonomy and post meta to use in the theme templates
+		$added_item = did_action( 'added_term_relationship' );
+		wp_set_object_terms( $post_id, $this->file_meta['term_id'], $this->taxonomy_file );
+
+		if ( did_action( 'added_term_relationship' ) > $added_item ) {
+			$anything_updated[] = true;
+		}
+
+		// If the file is deprecated do something
+		if ( ! empty( $this->file_meta['deprecated'] ) ) {
+			$tags['deprecated'] = $this->file_meta['deprecated'];
+		}
+
+		if ( $post_data['post_type'] !== $this->post_type_class ) {
+			$anything_updated[] = update_post_meta( $post_id, '_wp-parser_args', $data->getArguments() );
+		}
+
+		// If the post type is using namespace aliases, record them.
+		if ( ! empty( $data->getAliases() ) ) {
+			$anything_updated[] = update_post_meta( $post_id, '_wp_parser_aliases', (array) $data->getAliases() );
+		}
+
+		// Record the namespace if there is one.
+		if ( ! empty( $data->getNamespace() ) ) {
+			$anything_updated[] = update_post_meta( $post_id, '_wp_parser_namespace', (string) addslashes( $data->getNamespace() ) );
+		}
+
+		$anything_updated[] = update_post_meta( $post_id, '_wp-parser_line_num', 	 (string) $data->getLine() );
+		$anything_updated[] = update_post_meta( $post_id, '_wp-parser_end_line_num', (string) $data->getEndLine() );
+		$anything_updated[] = update_post_meta( $post_id, '_wp-parser_tags', $tags );
+
+		return $anything_updated;
+}
 }
