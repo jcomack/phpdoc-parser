@@ -1,13 +1,14 @@
 <?php namespace WP_Parser;
 
 use phpDocumentor\Reflection\ClassReflector\MethodReflector;
+use WP_Parser\DocPart\BaseDocPart;
 use WP_Parser\DocPart\DocPart;
 
 /**
  * Class DocCallable
  * @package WP_Parser
  */
-class DocCallable implements DocPart {
+class DocCallable extends BaseDocPart implements DocPart {
 	/**
 	 * @var string
 	 */
@@ -67,6 +68,8 @@ class DocCallable implements DocPart {
 	 * @param array  $hooks		The hooks available in the callable.
 	 */
 	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = [], array $hooks = [] ) {
+		parent::__construct( $name, $namespace, $doc );
+
 		$this->name      = $name;
 		$this->namespace = $namespace;
 		$this->aliases   = $aliases;

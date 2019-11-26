@@ -7,7 +7,7 @@ use WP_Parser\DocCallable;
  * Class DocMethod
  * @package WP_Parser\DocPart
  */
-class DocMethod extends BaseDocPart implements DocPart {
+class DocMethod implements DocPart {
 	/**
 	 * @var DocCallable
 	 */
@@ -43,8 +43,6 @@ class DocMethod extends BaseDocPart implements DocPart {
 	 * @param string      $visibility The visibility of the method.
 	 */
 	public function __construct( DocCallable $callable, bool $final, bool $abstract, bool $static, string $visibility ) {
-		parent::__construct( $callable->getName(), $callable->getNamespace(), $callable->getDoc() );
-
 		$this->callable = $callable;
 		$this->final = $final;
 		$this->abstract = $abstract;
@@ -79,18 +77,38 @@ class DocMethod extends BaseDocPart implements DocPart {
 		return $this->callable;
 	}
 
+	/**
+	 * Gets the associated arguments.
+	 *
+	 * @return array The arguments.
+	 */
 	public function getArguments() {
 		return $this->getCallable()->getArguments();
 	}
 
+	/**
+	 * Gets the associated aliases.
+	 *
+	 * @return array The aliases.
+	 */
 	public function getAliases() {
 		return $this->getCallable()->getAliases();
 	}
 
+	/**
+	 * Gets starting line.
+	 *
+	 * @return int The starting line.
+	 */
 	public function getLine() {
 		return $this->getCallable()->getLine();
 	}
 
+	/**
+	 * Gets the ending line.
+	 *
+	 * @return int The ending line.
+	 */
 	public function getEndLine() {
 		return $this->getCallable()->getEndLine();
 	}

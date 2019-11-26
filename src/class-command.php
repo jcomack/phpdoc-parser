@@ -26,7 +26,7 @@ class Command extends WP_CLI_Command {
 	public function export( $args, $assoc_args ) {
 		$directory    = realpath( $args[0] );
 		$output_file  = empty( $args[1] ) ? 'phpdoc.json' : $args[1];
-		$ignore_files = empty( $assoc_args['ignore_files'] ) ? [] : explode( ',', $assoc_args['ignore_files'] );
+		$ignore_files = $this->getIgnoreFiles( $assoc_args );
 
 		$json        = $this->_get_phpdoc_data( $directory, 'json', $ignore_files );
 		$result      = file_put_contents( $output_file, $json );
@@ -72,7 +72,7 @@ class Command extends WP_CLI_Command {
 		}
 
 		// Import data
-		$this->_do_import( $phpdoc, isset( $assoc_args['quick'] ), isset( $assoc_args['import-internal'] ) );
+		$this->_do_import( $phpdoc, isset( $assoc_args['import-internal'] ) );
 	}
 
 	/**
@@ -87,7 +87,7 @@ class Command extends WP_CLI_Command {
 	public function create( $args, $assoc_args ) {
 		list( $directory ) = $args;
 		$directory = realpath( $directory );
-		$ignore_files = empty( $assoc_args['ignore_files'] ) ? [] : explode( ',', $assoc_args['ignore_files'] );
+		$ignore_files = $this->getIgnoreFiles( $assoc_args );
 
 		if ( empty( $directory ) ) {
 			WP_CLI::error( sprintf( "Can't read %1\$s. Does the file exist?", $directory ) );
@@ -99,7 +99,7 @@ class Command extends WP_CLI_Command {
 		$data = $this->_get_phpdoc_data( $directory, 'array', $ignore_files );
 
 		// Import data
-		$this->_do_import( $data, isset( $assoc_args['quick'] ), isset( $assoc_args['import-internal'] ) );
+		$this->_do_import( $data, isset( $assoc_args['import-internal'] ) );
 	}
 
 	/**
@@ -158,10 +158,9 @@ class Command extends WP_CLI_Command {
 	 * Import the PHPDoc $data into WordPress posts and taxonomies
 	 *
 	 * @param Collection $data
-	 * @param bool  $skip_sleep     If true, the sleep() calls are skipped.
 	 * @param bool  $import_ignored If true, functions marked `@ignore` will be imported.
 	 */
-	protected function _do_import( Collection $data, $skip_sleep = false, $import_ignored = false ) {
+	protected function _do_import( Collection $data, $import_ignored = false ) {
 
 		if ( ! wp_get_current_user()->exists() ) {
 			WP_CLI::error( 'Please specify a valid user: --user=<id|login>' );
@@ -171,8 +170,19 @@ class Command extends WP_CLI_Command {
 		// Run the importer
 		$importer = new Importer();
 		$importer->setLogger( new WP_CLI_Logger() );
-		$importer->import( $data, $skip_sleep, $import_ignored );
+		$importer->import( $data, $import_ignored );
 
 		WP_CLI::line();
 	}
+
+	/**
+	 * @param $assoc_args
+	 *
+	 * @return array
+	 */
+	protected function getIgnoreFiles( $assoc_args ): array {
+		$ignore_files = empty( $assoc_args['ignore_files'] ) ? [] : explode( ',', $assoc_args['ignore_files'] );
+
+		return $ignore_files;
+}
 }
