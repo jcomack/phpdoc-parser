@@ -244,7 +244,9 @@ class File_Reflector extends FileReflector {
 	}
 
 	/**
-	 * @param Method_Call_Reflector $method
+	 * Adds the passed method to the uses stack.
+	 *
+	 * @param Method_Call_Reflector $method The method to add.
 	 */
 	protected function addMethod( Method_Call_Reflector $method ): void {
 		$this->getLocation()->uses['methods'][] = $method;
