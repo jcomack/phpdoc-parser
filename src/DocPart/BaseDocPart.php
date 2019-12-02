@@ -20,8 +20,8 @@ abstract class BaseDocPart {
 	private $namespace;
 
 	public function __construct( string $name, string $namespace, array $docblock ) {
-		$this->name = $name;
-		$this->docblock = $docblock;
+		$this->name 	 = $name;
+		$this->docblock  = $docblock;
 		$this->namespace = $namespace;
 	}
 
@@ -46,7 +46,7 @@ abstract class BaseDocPart {
 	 * @return array
 	 */
 	public function getTags(): array {
-		return $this->getDocblock()['tags'];
+		return $this->docblock['tags'];
 	}
 
 	public function getIgnored(): array {

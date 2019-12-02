@@ -787,6 +787,12 @@ class Importer {
 	 * @return array The set data.
 	 */
 	protected function set_since_versions( $post_id, $tags ) {
+
+
+		// TODO: refactor this to use meta values instead. Also keep track whether the post_id still exists in the current version or not.
+
+
+
 		$since_versions = wp_list_filter( $tags, [ 'name' => 'since' ] );
 		$anything_updated = [];
 
@@ -819,6 +825,10 @@ class Importer {
 		}
 
 		return $anything_updated;
+	}
+
+	protected function mark_as_deleted( $post_id ) {
+
 	}
 
 	/**
