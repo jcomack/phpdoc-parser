@@ -113,6 +113,16 @@ class Importer {
 	 */
 	private $plugin_term;
 
+	/**
+	 * @var string
+	 */
+	private $plugin_version = '';
+
+	/**
+	 * @var Collection
+	 */
+	private $updates;
+
 	const INSERTED_ITEM_MESSAGE = 'Inserted %1$s "%2$s"';
 	const UPDATED_ITEM_MESSAGE  = 'Updated %1$s "%2$s"';
 	const IGNORED_ITEM_MESSAGE  = 'Skipped importing @ignore-d %1$s "%2$s"';
@@ -146,6 +156,7 @@ class Importer {
 		}
 
 		$this->logger = new ImportLogger();
+		$this->updates = new Collection();
 	}
 
 	/**
@@ -194,14 +205,17 @@ class Importer {
 
 		$files->each(
 			function( $file ) use ( &$file_number, $totalFiles, $import_ignored_functions ) {
-			$this->logger->info(
-				sprintf(
-					'Processing file %1$s of %2$s "%3$s".',
-					number_format_i18n( $file_number ),
-					number_format_i18n( $totalFiles ),
-					$file->relativePath
-				)
-			);
+
+				$this->setPluginInformation( $file );
+
+				$this->logger->info(
+					sprintf(
+						'Processing file %1$s of %2$s "%3$s".',
+						number_format_i18n( $file_number ),
+						number_format_i18n( $totalFiles ),
+						$file->relativePath
+					)
+				);
 
 			$file_number++;
 
@@ -222,6 +236,20 @@ class Importer {
 		} else {
 			$this->logger->info( 'Import complete, but some errors were found:' );
 			$this->logger->output_stashed_errors();
+		}
+	}
+
+	protected function setPluginInformation( DocFile $file ) {
+		if ( empty( $this->plugin_name ) ) {
+			$this->plugin_name = $file->getPluginName();
+		}
+
+		if ( empty( $this->plugin_dir ) ) {
+			$this->plugin_dir = $file->getPluginDirectory();
+		}
+
+		if ( empty( $this->plugin_version ) || $this->plugin_version !== $file->getPluginVersion() ) {
+			$this->plugin_version = $file->getPluginVersion();
 		}
 	}
 
@@ -278,17 +306,13 @@ class Importer {
 	 * @return void
 	 */
 	public function import_file( DocFile $file, $import_ignored = false ) {
-		$this->plugin_term = $this->insert_term( $file->getPluginName(), $this->taxonomy_plugin );
+		$this->plugin_term = $this->insert_term( $this->plugin_name, $this->taxonomy_plugin );
 
-		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-directory', plugin_basename( $file->getRoot() ), true );
-		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-version',  $file->getPluginVersion(), true );
+		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-directory', $this->plugin_dir, true );
+		add_term_meta( $this->plugin_term['term_id'], '_wp-parser-plugin-version',  $this->plugin_version, true );
 
 		// The path to the file.
 		$path = $file->getPath();
-
-		if ( ! isset( $this->plugin_name ) || $this->plugin_name !== $file->getPluginName() ) {
-			$this->plugin_name = $file->getPluginName();
-		}
 
 		// Maybe add this file to the file taxonomy
 		$slug = sanitize_title( str_replace( '/', '_', $path ) );
@@ -312,7 +336,7 @@ class Importer {
 		$this->file_meta = [
 			'docblock'  	 => $file->getDocBlock(), // File docblock
 			'term_id'   	 => $path, // Term name in the file taxonomy is the file name
-			'plugin_version' => $file->getPluginVersion(), // The plugin version
+			'plugin_version' => $this->plugin_version, // The plugin version
 			'deprecated'	 => $this->get_file_deprecation_version( $file ), // Deprecation version
 		];
 
@@ -781,54 +805,21 @@ class Importer {
 	/**
 	 * Sets the @since versions for the post based on the passed tag data.
 	 *
-	 * @param int 	$post_id The post ID.
-	 * @param array $tags	 The tag data to extract the since data from.
+	 * @param int 		$post_id The post ID.
+	 * @param DocPart 	$data	 The DocPart data.
 	 *
-	 * @return array The set data.
+	 * @return bool|int The meta field ID of the inserted record or false on failure.
 	 */
-	protected function set_since_versions( $post_id, $tags ) {
+	protected function setSinceVersions( $post_id, DocPart $data ) {
+		$since_data = array_filter( $data->getSince(), function( $item ) {
+			return ! empty( $item['content'] );
+		} );
 
-
-		// TODO: refactor this to use meta values instead. Also keep track whether the post_id still exists in the current version or not.
-
-
-
-		$since_versions = wp_list_filter( $tags, [ 'name' => 'since' ] );
-		$anything_updated = [];
-
-		if ( empty( $since_versions ) ) {
-			return $anything_updated;
+		if ( empty( $since_data ) ) {
+			return false;
 		}
 
-		// Loop through all @since versions.
-		foreach ( $since_versions as $since_version ) {
-			if ( empty( $since_version['content'] ) ) {
-				continue;
-			}
-
-			$since_term = $this->insert_term( $since_version['content'], $this->taxonomy_since_version );
-
-			// Assign the tax item to the post
-			if ( is_wp_error( $since_term ) ) {
-				$this->logger->warning( "Cannot set @since term: " . $since_term->get_error_message(), 1 );
-
-				continue;
-			}
-
-			$added_term_relationship = did_action( 'added_term_relationship' );
-
-			wp_set_object_terms( $post_id, (int) $since_term['term_id'], $this->taxonomy_since_version, true );
-
-			if ( did_action( 'added_term_relationship' ) > $added_term_relationship ) {
-				$anything_updated[] = true;
-			}
-		}
-
-		return $anything_updated;
-	}
-
-	protected function mark_as_deleted( $post_id ) {
-
+		return update_post_meta( $post_id, '_wp-parser_since', $since_data );
 	}
 
 	/**
@@ -1010,6 +1001,14 @@ class Importer {
 		}
 	}
 
+	/**
+	 * Logs a message based on the processed item.
+	 *
+	 * @param string $message	  The message to log.
+	 * @param string $postType	  The post type of the item being logged.
+	 * @param string $name		  The name of the item being logged.
+	 * @param int    $indentation The amount of indentation to apply.
+	 */
 	protected function logItem( string $message, string $postType, string $name, int $indentation = 1 ) {
 		$postTypeMappings = [
 			$this->post_type_class		=> 'class',
@@ -1038,8 +1037,10 @@ class Importer {
 		$anything_updated = [];
 		$tags = $data->getTags();
 
-		// If the item has @since markup, assign the taxonomy
-		$anything_updated = array_merge( $anything_updated, $this->set_since_versions( $post_id, $tags ) );
+		// If the item has @since markup, assign the post meta
+		$this->setSinceVersions( $post_id, $data );
+		$this->setVersioningMeta( $post_id, $data );
+
 		$anything_updated = array_merge( $anything_updated, $this->set_packages( $post_id, $tags ) );
 
 		// Set other taxonomy and post meta to use in the theme templates
@@ -1074,5 +1075,16 @@ class Importer {
 		$anything_updated[] = update_post_meta( $post_id, '_wp-parser_tags', $tags );
 
 		return $anything_updated;
-}
+	}
+
+	/**
+	 * Sets the version of the imported docpart.
+	 *
+	 * @param int     $post_id 	The post ID to associate the data with.
+	 * @param DocPart $part 	The docpart to extract the data from.
+	 */
+	protected function setVersioningMeta( int $post_id, DocPart $part ) {
+		update_post_meta( $post_id, 'from_version', ( $part->getFirstAppearance() ) ?: $this->plugin_version );
+		update_post_meta( $post_id, 'latest_version', $this->plugin_version );
+	}
 }

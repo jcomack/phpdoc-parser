@@ -42,7 +42,7 @@ class DocFunction extends BaseDocPart implements DocPart {
 	/**
 	 * @var array
 	 */
-	private $doc;
+	private $docblock;
 
 	/**
 	 * @var array
@@ -57,26 +57,20 @@ class DocFunction extends BaseDocPart implements DocPart {
 	/**
 	 * DocFunction constructor.
 	 *
-	 * @param string $name		The name of the function.
-	 * @param string $namespace	The namespace of the function.
-	 * @param array  $aliases	The aliases for the function.
-	 * @param int    $line		The line on which the function's code starts.
-	 * @param int    $end_line	The line on which the function's code ends.
-	 * @param array  $arguments	The arguments passed to the function.
-	 * @param array  $doc		The documentation of the function.
-	 * @param array  $uses		Other functions that are used by this function.
-	 * @param array  $hooks		The hooks available in the function.
+	 * @param string $name      The name of the function.
+	 * @param string $namespace The namespace of the function.
+	 * @param array  $aliases   The aliases for the function.
+	 * @param int    $line      The line on which the function's code starts.
+	 * @param int    $end_line  The line on which the function's code ends.
+	 * @param array  $arguments The arguments passed to the function.
+	 * @param array  $docblock  The documentation of the function.
+	 * @param array  $uses      Other functions that are used by this function.
+	 * @param array  $hooks     The hooks available in the function.
 	 */
-	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $doc, array $uses = [], array $hooks = [] ) {
-		parent::__construct( $name, $namespace, $doc );
+	public function __construct( string $name, string $namespace, array $aliases, int $line, int $end_line, array $arguments, array $docblock, array $uses = [], array $hooks = [] ) {
+		parent::__construct( $name, $namespace, $line, $end_line, $docblock, $aliases );
 
-		$this->name      = $name;
-		$this->namespace = $namespace;
-		$this->aliases   = $aliases;
-		$this->line      = $line;
-		$this->end_line  = $end_line;
 		$this->arguments = $arguments;
-		$this->doc       = $doc;
 		$this->uses      = $uses;
 		$this->hooks     = $hooks;
 	}
@@ -91,48 +85,12 @@ class DocFunction extends BaseDocPart implements DocPart {
 	}
 
 	/**
-	 * Gets the aliases.
-	 *
-	 * @return array The aliases of the function.
-	 */
-	public function getAliases() {
-		return $this->aliases;
-	}
-
-	/**
-	 * Gets the line that the function starts on.
-	 *
-	 * @return int The starting line of the function.
-	 */
-	public function getLine() {
-		return $this->line;
-	}
-
-	/**
-	 * Gets the line that the function ends on.
-	 *
-	 * @return int The ending line of the function.
-	 */
-	public function getEndLine() {
-		return $this->end_line;
-	}
-
-	/**
 	 * Gets the arguments.
 	 *
 	 * @return array The arguments of the function.
 	 */
 	public function getArguments() {
 		return $this->arguments;
-	}
-
-	/**
-	 * Gets the documentation.
-	 *
-	 * @return array The documentation of the function.
-	 */
-	public function getDoc() {
-		return $this->doc;
 	}
 
 	/**

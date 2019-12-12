@@ -149,12 +149,10 @@ class DocMethod implements DocPart {
 	}
 
 	/**
-	 * Gets the documentation.
-	 *
-	 * @return array The documentation of the method.
+	 * @inheritDoc
 	 */
 	public function getDocblock() {
-		return $this->function->getDoc();
+		return $this->function->getDocblock();
 	}
 
 	/**
@@ -176,12 +174,24 @@ class DocMethod implements DocPart {
 	}
 
 	/**
-	 * Gets the tags.
-	 *
-	 * @return array The tags.
+	 * @inheritDoc
 	 */
 	public function getTags() {
 		return $this->function->getTags();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getSince(): array {
+		return $this->function->getSince();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getFirstAppearance(): string {
+		return $this->function->getFirstAppearance();
 	}
 
 	/**
