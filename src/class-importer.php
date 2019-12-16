@@ -181,13 +181,13 @@ class Importer {
 	public function import( Collection $files, $import_ignored_functions = false ) {
 		global $wpdb;
 
-		$time_start = microtime(true);
+		$time_start  = microtime( true );
 		$num_queries = $wpdb->num_queries;
 
 		$this->logger->info( 'Starting import. This will take some time…' );
 
-		$file_number  = 1;
-		$totalFiles = $files->count();
+		$file_number = 1;
+		$totalFiles  = $files->count();
 
 		$this->setupImport();
 
@@ -198,13 +198,13 @@ class Importer {
 		}
 
 		// Sanity check -- do the required taxonomies exist?
-		if ( ! taxonomy_exists( $this->taxonomy_file ) || ! taxonomy_exists( $this->taxonomy_since_version ) || ! taxonomy_exists( $this->taxonomy_package ) ) {
+		if ( ! taxonomy_exists( $this->taxonomy_file ) || ! taxonomy_exists( $this->taxonomy_package ) ) {
 			$this->logger->error( sprintf( 'Missing taxonomy; check that "%1$s" is registered.', $this->taxonomy_file ) );
 			exit;
 		}
 
 		$files->each(
-			function( $file ) use ( &$file_number, $totalFiles, $import_ignored_functions ) {
+			function ( $file ) use ( &$file_number, $totalFiles, $import_ignored_functions ) {
 
 				$this->setPluginInformation( $file );
 
@@ -217,16 +217,16 @@ class Importer {
 					)
 				);
 
-			$file_number++;
+				$file_number ++;
 
-			$this->import_file( $file, $import_ignored_functions );
-		} );
+				$this->import_file( $file, $import_ignored_functions );
+			} );
 
 		$this->log_last_import();
 		$this->teardownImport();
 
 		$time_end = microtime( true );
-		$time = $time_end - $time_start;
+		$time     = $time_end - $time_start;
 
 		$this->logger->info( 'Time: ' . $time );
 		$this->logger->info( 'Queries: ' . ( $wpdb->num_queries - $num_queries ) );
@@ -239,6 +239,11 @@ class Importer {
 		}
 	}
 
+	/**
+	 * Sets the plugin information based on the passed DocFile.
+	 *
+	 * @param DocFile $file The file to extract the plugin information from.
+	 */
 	protected function setPluginInformation( DocFile $file ) {
 		if ( empty( $this->plugin_name ) ) {
 			$this->plugin_name = $file->getPluginName();
@@ -1084,7 +1089,9 @@ class Importer {
 	 * @param DocPart $part 	The docpart to extract the data from.
 	 */
 	protected function setVersioningMeta( int $post_id, DocPart $part ) {
-		update_post_meta( $post_id, 'from_version', ( $part->getFirstAppearance() ) ?: $this->plugin_version );
+		if ( ! metadata_exists( 'post', $post_id, 'from_version' ) ) {
+			update_post_meta( $post_id, 'from_version', ( $part->getFirstAppearance() ) ?: $this->plugin_version );
+		}
 		update_post_meta( $post_id, 'latest_version', $this->plugin_version );
 	}
 }

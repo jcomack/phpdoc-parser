@@ -6,14 +6,17 @@ use Tightenco\Collect\Support\Collection;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_Error;
-
-// Temporary toggle until we figure out what's going wrong with the plugins taxonomy.
-const USE_PLUGIN_PREFIX = false;
+use WP_Parser\Loggers\CommandLineLogger;
 
 /**
  * Converts PHPDoc markup into a template ready for import to a WordPress blog.
  */
 class Command extends WP_CLI_Command {
+
+	/**
+	 * @var array
+	 */
+	private $validTaxonmies = [ 'wp-parser-since' ];
 
 	/**
 	 * Generate a JSON file containing the PHPDoc markup, and save to filesystem.
@@ -103,6 +106,25 @@ class Command extends WP_CLI_Command {
 	}
 
 	/**
+	 * Wipes terms based on the passed type.
+	 *
+	 * @subcommand wipe
+	 * @synopsis   <taxonomy> [--user]
+	 *
+	 * @param array $args       The arguments to pass to the command.
+	 * @param array $assoc_args The associated arguments to pass to the command.
+	 */
+	public function wipe( $args, $assoc_args ) {
+		$type = $args[0];
+
+		if ( ! in_array( $type, $this->validTaxonmies ) ) {
+			WP_CLI::error( sprintf( 'Cannot wipe taxonomy of type: %1$s', $type ) );
+		}
+
+		$this->clearTerm( $type );
+	}
+
+	/**
 	 * Generate the data from the PHPDoc markup.
 	 *
 	 * @param string $path         Directory or file to scan for PHPDoc
@@ -169,16 +191,52 @@ class Command extends WP_CLI_Command {
 
 		// Run the importer
 		$importer = new Importer();
-		$importer->setLogger( new WP_CLI_Logger() );
+		$importer->setLogger( new CommandLineLogger() );
 		$importer->import( $data, $import_ignored );
 
 		WP_CLI::line();
 	}
 
 	/**
-	 * @param $assoc_args
+	 * Clears the passed taxonomy.
 	 *
-	 * @return array
+	 * @param string $taxonomy The taxonomy to clear.
+	 */
+	private function clearTerm( string $taxonomy ) {
+		if ( ! wp_get_current_user()->exists() ) {
+			WP_CLI::error( 'Please specify a valid user: --user=<id|login>' );
+			exit;
+		}
+
+		$terms = get_terms( [
+			'fields' => 'ids',
+			'hide_empty' => false,
+			'taxonomy' => $taxonomy,
+		] );
+
+		if ( count( $terms ) === 0 ) {
+			WP_CLI::line( 'No terms to delete' );
+			exit;
+		}
+
+		if ( $terms instanceof WP_Error ) {
+			WP_CLI::error( sprintf( 'Problem with collecting terms: %1$s', $terms->get_error_message() ) );
+			exit;
+		}
+
+		foreach ( $terms as $term ) {
+			wp_delete_term( $term, $taxonomy );
+		}
+
+		WP_CLI::line( sprintf( 'Wiped terms of taxonomy `%1$s`', $taxonomy ) );
+	}
+
+	/**
+	 * Gets the ignored files from the associated arguments.
+	 *
+	 * @param array $assoc_args The associated arguments.
+	 *
+	 * @return array The ignored files.
 	 */
 	protected function getIgnoreFiles( $assoc_args ): array {
 		$ignore_files = empty( $assoc_args['ignore_files'] ) ? [] : explode( ',', $assoc_args['ignore_files'] );
