@@ -463,7 +463,7 @@ class Importer {
 	 */
 	protected function import_method( string $parent, DocMethod $data, $parent_post_id = 0, $import_ignored = false ) {
 		// Namespace method names with the class name
-		$data->setName( $parent . '::' . $data->getName() );
+		$data->setParent( $parent );
 
 		// Insert this method.
 		$method_id = $this->import_item( $data, $parent_post_id, $import_ignored, [ 'post_type' => $this->post_type_method ] );

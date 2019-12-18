@@ -15,34 +15,9 @@ class DocFunction extends BaseDocPart implements DocPart {
 	private $name;
 
 	/**
-	 * @var string
-	 */
-	private $namespace;
-
-	/**
-	 * @var array
-	 */
-	private $aliases;
-
-	/**
-	 * @var int
-	 */
-	private $line;
-
-	/**
-	 * @var int
-	 */
-	private $end_line;
-
-	/**
 	 * @var array
 	 */
 	private $arguments;
-
-	/**
-	 * @var array
-	 */
-	private $docblock;
 
 	/**
 	 * @var array

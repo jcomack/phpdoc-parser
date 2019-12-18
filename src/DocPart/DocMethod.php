@@ -33,6 +33,11 @@ class DocMethod implements DocPart {
 	private $static;
 
 	/**
+	 * @var string
+	 */
+	private $parent = '';
+
+	/**
 	 * DocMethod constructor.
 	 *
 	 * @param DocFunction $function   The DocFunction instance to use for the basic data.
@@ -50,12 +55,12 @@ class DocMethod implements DocPart {
 	}
 
 	/**
-	 * Sets the method's name.
+	 * Sets the method's parent.
 	 *
-	 * @param string $name The name to set.
+	 * @param string $parent The parent to set.
 	 */
-	public function setName( string $name ) {
-		$this->function->setName( $name );
+	public function setParent( string $parent ) {
+		$this->parent = $parent;
 	}
 
 	/**
@@ -64,7 +69,11 @@ class DocMethod implements DocPart {
 	 * @return string The name.
 	 */
 	public function getName(): string {
-		return $this->function->getName();
+		if ( $this->parent === '' ) {
+			return $this->function->getName();
+		}
+
+		return $this->parent . '::' . $this->function->getName();
 	}
 
 	/**
@@ -72,7 +81,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return array The arguments.
 	 */
-	public function getArguments() {
+	public function getArguments(): array  {
 		return $this->function->getArguments();
 	}
 
@@ -81,7 +90,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return array The aliases.
 	 */
-	public function getAliases() {
+	public function getAliases(): array {
 		return $this->function->getAliases();
 	}
 
@@ -90,7 +99,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return int The starting line.
 	 */
-	public function getLine() {
+	public function getLine(): int {
 		return $this->function->getLine();
 	}
 
@@ -99,7 +108,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return int The ending line.
 	 */
-	public function getEndLine() {
+	public function getEndLine(): int {
 		return $this->function->getEndLine();
 	}
 
@@ -108,7 +117,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return bool Whether or not the method is final.
 	 */
-	public function isFinal() {
+	public function isFinal(): bool {
 		return $this->final;
 	}
 
@@ -117,7 +126,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return bool Whether or not the method is abstract.
 	 */
-	public function isAbstract() {
+	public function isAbstract(): bool {
 		return $this->abstract;
 	}
 
@@ -126,7 +135,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return string The visibility of the method.
 	 */
-	public function getVisibility() {
+	public function getVisibility(): string {
 		return $this->visibility;
 	}
 
@@ -135,7 +144,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return bool Whether or not the method is static.
 	 */
-	public function isStatic() {
+	public function isStatic(): bool {
 		return $this->static;
 	}
 
@@ -144,14 +153,14 @@ class DocMethod implements DocPart {
 	 *
 	 * @return array The hooks associated with the method.
 	 */
-	public function getHooks() {
+	public function getHooks(): array {
 		return $this->function->getHooks();
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function getDocblock() {
+	public function getDocblock(): array {
 		return $this->function->getDocblock();
 	}
 
@@ -160,7 +169,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return array The ignored items.
 	 */
-	public function getIgnored() {
+	public function getIgnored(): array {
 		return $this->function->getIgnored();
 	}
 
@@ -169,14 +178,14 @@ class DocMethod implements DocPart {
 	 *
 	 * @return string The namespace.
 	 */
-	public function getNamespace() {
+	public function getNamespace(): string {
 		return $this->function->getNamespace();
 	}
 
 	/**
 	 * @inheritDoc
 	 */
-	public function getTags() {
+	public function getTags(): array {
 		return $this->function->getTags();
 	}
 
@@ -201,7 +210,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return DocMethod The method instance.
 	 */
-	public static function fromReflector( $method ) {
+	public static function fromReflector( $method ): DocMethod {
 		return new self(
 			DocFunction::fromReflector( $method ),
 			$method->isFinal(),
