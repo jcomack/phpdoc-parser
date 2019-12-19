@@ -57,6 +57,10 @@ abstract class DocAbstract {
 		return $this->plugin->getVersion();
 	}
 
+	public function getPluginDirectory() {
+		return plugin_basename( $this->root );
+	}
+
 	/**
 	 * Parses the file data.
 	 *

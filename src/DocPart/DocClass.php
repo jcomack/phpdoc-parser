@@ -73,37 +73,17 @@ class DocClass extends BaseDocPart implements DocPart {
 	 * @param array  $implements	The interfaces that the class implements.
 	 * @param array  $properties	The properties of the class.
 	 * @param array  $methods		The methods of the class.
-	 * @param array  $doc			The documentation of the class.
+	 * @param array  $docblock		The documentation of the class.
 	 */
-	public function __construct( string $name, string $namespace, int $line, int $end_line, bool $final, bool $abstract, string $extends, array $implements, array $properties, array $methods, array $doc ) {
-		parent::__construct( $name, $namespace, $doc );
+	public function __construct( string $name, string $namespace, int $line, int $end_line, bool $final, bool $abstract, string $extends, array $implements, array $properties, array $methods, array $docblock ) {
+		parent::__construct( $name, $namespace, $line, $end_line, $docblock );
 
-		$this->line       = $line;
-		$this->end_line   = $end_line;
 		$this->final      = $final;
 		$this->abstract   = $abstract;
 		$this->extends    = $extends;
 		$this->implements = $implements;
 		$this->properties = $properties;
 		$this->methods    = $methods;
-	}
-
-	/**
-	 * Gets the line that the class starts on.
-	 *
-	 * @return int The starting line of the class.
-	 */
-	public function getLine() {
-		return $this->line;
-	}
-
-	/**
-	 * Gets the line that the class ends on.
-	 *
-	 * @return int The ending line of the class.
-	 */
-	public function getEndLine() {
-		return $this->end_line;
 	}
 
 	/**

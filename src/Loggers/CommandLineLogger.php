@@ -1,5 +1,5 @@
 <?php
-namespace WP_Parser;
+namespace WP_Parser\Loggers;
 
 use Psr\Log\AbstractLogger;
 use Psr\Log\LogLevel;
@@ -8,7 +8,7 @@ use WP_CLI;
 /**
  * PSR-3 logger for WP CLI.
  */
-class WP_CLI_Logger extends AbstractLogger {
+class CommandLineLogger extends AbstractLogger {
 
 	/**
 	 * @param string $level

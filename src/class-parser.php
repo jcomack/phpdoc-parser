@@ -172,19 +172,12 @@ class Parser {
 			);
 		}
 
-		if ( ! taxonomy_exists( 'wp-parser-since' ) ) {
-			register_taxonomy(
-				'wp-parser-since',
-				$this->taxonomy_object_types,
-				[
-					'hierarchical'          => true,
-					'label'                 => __( '@since', 'wp-parser' ),
-					'public'                => true,
-					'rewrite'               => [ 'slug' => 'since' ],
-					'sort'                  => false,
-					'update_count_callback' => '_update_post_term_count',
-				]
-			);
+		if ( taxonomy_exists( 'wp-parser-since' ) ) {
+			foreach ( $this->taxonomy_object_types as $taxonomy_object_type ) {
+				unregister_taxonomy_for_object_type( 'wp-parser-since', $taxonomy_object_type );
+			}
+
+			unregister_taxonomy( 'wp-parser-since' );
 		}
 
 		if ( ! taxonomy_exists( 'wp-parser-namespace' ) ) {

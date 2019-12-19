@@ -1,7 +1,6 @@
 <?php namespace WP_Parser\DocPart;
 
 use phpDocumentor\Reflection\ClassReflector\MethodReflector;
-use WP_Parser\DocCallable;
 
 /**
  * Class DocMethod
@@ -9,9 +8,9 @@ use WP_Parser\DocCallable;
  */
 class DocMethod implements DocPart {
 	/**
-	 * @var DocCallable
+	 * @var DocFunction
 	 */
-	private $callable;
+	private $function;
 
 	/**
 	 * @var bool
@@ -34,29 +33,34 @@ class DocMethod implements DocPart {
 	private $static;
 
 	/**
+	 * @var string
+	 */
+	private $parent = '';
+
+	/**
 	 * DocMethod constructor.
 	 *
-	 * @param DocCallable $callable   The DocCallable instance to use for the basic data.
-	 * @param bool        $final	  Whether or not the method is considered final.
-	 * @param bool        $abstract	  Whether or not the method is abstract.
-	 * @param bool        $static	  Whether or not the method is static.
+	 * @param DocFunction $function   The DocFunction instance to use for the basic data.
+	 * @param bool        $final      Whether or not the method is considered final.
+	 * @param bool        $abstract   Whether or not the method is abstract.
+	 * @param bool        $static     Whether or not the method is static.
 	 * @param string      $visibility The visibility of the method.
 	 */
-	public function __construct( DocCallable $callable, bool $final, bool $abstract, bool $static, string $visibility ) {
-		$this->callable = $callable;
-		$this->final = $final;
-		$this->abstract = $abstract;
+	public function __construct( DocFunction $function, bool $final, bool $abstract, bool $static, string $visibility ) {
+		$this->function   = $function;
+		$this->final      = $final;
+		$this->abstract   = $abstract;
 		$this->visibility = $visibility;
-		$this->static = $static;
+		$this->static     = $static;
 	}
 
 	/**
-	 * Sets the method's name.
+	 * Sets the method's parent.
 	 *
-	 * @param string $name The name to set.
+	 * @param string $parent The parent to set.
 	 */
-	public function setName( string $name ) {
-		$this->callable->setName( $name );
+	public function setParent( string $parent ) {
+		$this->parent = $parent;
 	}
 
 	/**
@@ -65,16 +69,11 @@ class DocMethod implements DocPart {
 	 * @return string The name.
 	 */
 	public function getName(): string {
-		return $this->getCallable()->getName();
-	}
+		if ( $this->parent === '' ) {
+			return $this->function->getName();
+		}
 
-	/**
-	 * Gets the callable instance.
-	 *
-	 * @return DocCallable The callable instance.
-	 */
-	public function getCallable() {
-		return $this->callable;
+		return $this->parent . '::' . $this->function->getName();
 	}
 
 	/**
@@ -82,8 +81,8 @@ class DocMethod implements DocPart {
 	 *
 	 * @return array The arguments.
 	 */
-	public function getArguments() {
-		return $this->getCallable()->getArguments();
+	public function getArguments(): array  {
+		return $this->function->getArguments();
 	}
 
 	/**
@@ -91,8 +90,8 @@ class DocMethod implements DocPart {
 	 *
 	 * @return array The aliases.
 	 */
-	public function getAliases() {
-		return $this->getCallable()->getAliases();
+	public function getAliases(): array {
+		return $this->function->getAliases();
 	}
 
 	/**
@@ -100,8 +99,8 @@ class DocMethod implements DocPart {
 	 *
 	 * @return int The starting line.
 	 */
-	public function getLine() {
-		return $this->getCallable()->getLine();
+	public function getLine(): int {
+		return $this->function->getLine();
 	}
 
 	/**
@@ -109,8 +108,8 @@ class DocMethod implements DocPart {
 	 *
 	 * @return int The ending line.
 	 */
-	public function getEndLine() {
-		return $this->getCallable()->getEndLine();
+	public function getEndLine(): int {
+		return $this->function->getEndLine();
 	}
 
 	/**
@@ -118,7 +117,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return bool Whether or not the method is final.
 	 */
-	public function isFinal() {
+	public function isFinal(): bool {
 		return $this->final;
 	}
 
@@ -127,7 +126,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return bool Whether or not the method is abstract.
 	 */
-	public function isAbstract() {
+	public function isAbstract(): bool {
 		return $this->abstract;
 	}
 
@@ -136,7 +135,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return string The visibility of the method.
 	 */
-	public function getVisibility() {
+	public function getVisibility(): string {
 		return $this->visibility;
 	}
 
@@ -145,7 +144,7 @@ class DocMethod implements DocPart {
 	 *
 	 * @return bool Whether or not the method is static.
 	 */
-	public function isStatic() {
+	public function isStatic(): bool {
 		return $this->static;
 	}
 
@@ -154,8 +153,54 @@ class DocMethod implements DocPart {
 	 *
 	 * @return array The hooks associated with the method.
 	 */
-	public function getHooks() {
-		return $this->callable->getHooks();
+	public function getHooks(): array {
+		return $this->function->getHooks();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getDocblock(): array {
+		return $this->function->getDocblock();
+	}
+
+	/**
+	 * Gets the @ignored items.
+	 *
+	 * @return array The ignored items.
+	 */
+	public function getIgnored(): array {
+		return $this->function->getIgnored();
+	}
+
+	/**
+	 * Gets the namespace.
+	 *
+	 * @return string The namespace.
+	 */
+	public function getNamespace(): string {
+		return $this->function->getNamespace();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getTags(): array {
+		return $this->function->getTags();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getSince(): array {
+		return $this->function->getSince();
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	public function getFirstAppearance(): string {
+		return $this->function->getFirstAppearance();
 	}
 
 	/**
@@ -165,9 +210,9 @@ class DocMethod implements DocPart {
 	 *
 	 * @return DocMethod The method instance.
 	 */
-	public static function fromReflector( $method ) {
+	public static function fromReflector( $method ): DocMethod {
 		return new self(
-			DocCallable::fromReflector( $method ),
+			DocFunction::fromReflector( $method ),
 			$method->isFinal(),
 			$method->isAbstract(),
 			$method->isStatic(),
