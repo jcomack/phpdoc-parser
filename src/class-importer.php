@@ -1039,8 +1039,6 @@ class Importer {
 	 * @return array The updated items.
 	 */
 	protected function updateMeta( DocPart $data, int $post_id, $post_data ): array {
-		$this->logger->info( "UPDATING META FOR " .  $post_id );
-
 		$anything_updated = [];
 		$tags = $data->getTags();
 
