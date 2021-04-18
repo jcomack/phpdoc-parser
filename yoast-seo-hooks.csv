@@ -1,0 +1,422 @@
+file,hook,line,description
+admin/capabilities/class-abstract-capability-manager.php,,,
+,{$capability}_roles,80,"Filter: Allow changing roles that a capability is added to."
+admin/capabilities/class-capability-manager-integration.php,,,
+,wpseo_register_capabilities,54,
+admin/class-admin-editor-specific-replace-vars.php,,,
+,wpseo_editor_specific_replace_vars,64,"Filter: Adds the possibility to add extra editor specific replacement variables."
+admin/class-admin-init.php,,,
+,wpseo_update_notice_content,159,"Filter: 'wpseo_update_notice_content' - Allow filtering of the content of the update notice read from the release-info.json file."
+,wpseo_always_register_metaboxes_on_admin,291,"Filter: 'wpseo_always_register_metaboxes_on_admin' - Allow developers to change whether the WPSEO metaboxes are only registered on the typical pages (lean loading) or always registered when in admin."
+admin/class-admin-recommended-replace-vars.php,,,
+,wpseo_recommended_replace_vars,154,"Filter: Adds the possibility to add extra recommended replacement variables."
+admin/class-admin.php,,,
+,wpseo_manage_options_capability,165,"Filter: 'wpseo_manage_options_capability' - Allow changing the capability users need to view the settings pages."
+,wpseo_helpscout_beacon_settings,400,"Filter: 'wpseo_helpscout_beacon_settings' - Allows overriding the HelpScout beacon settings."
+admin/class-extension-manager.php,,,
+,yoast-active-extensions,120,
+admin/class-license-page-manager.php,,,
+,yoast-active-extensions,48,"Filter: 'yoast-active-extensions' - Collects all active extensions. This hook is implemented in the                                     license manager."
+admin/class-meta-columns.php,,,
+,wpseo_use_page_analysis,49,
+admin/class-option-tabs-formatter.php,,,
+,wpseo_option_tab-{$tab_filter_name},61,"Allows to override the content that is display on the specific option tab."
+admin/class-primary-term-admin.php,,,
+,wpseo_primary_term_taxonomies,235,"Filters which taxonomies for which the user can choose the primary term."
+admin/class-yoast-form.php,,,
+,wpseo_admin_footer,155,"Apply general admin_footer hooks."
+,wpseo_admin_promo_footer,160,"Run possibly set actions to add for example an i18n box."
+,wpseo_admin_below_content,171,
+admin/class-yoast-notification-center.php,,,
+,yoast_notifications_before_storage,591,"Filter: 'yoast_notifications_before_storage' - Allows developer to filter notifications before saving them."
+admin/class-yoast-notification.php,,,
+,wpseo_notification_capabilities,237,"Filter capabilities that enable the displaying of this notification."
+,wpseo_notification_capability_check,254,"Filter capability check to enable all or any capabilities."
+admin/config-ui/class-configuration-page.php,,,
+,wpseo_configuration_wizard_head,133,"Is called before the closing </head> tag in the Yoast Configuration wizard."
+,wpseo_configuration_wizard_footer,157,"Is called before the closing </body> tag in the Yoast Configuration wizard."
+admin/filters/class-cornerstone-filter.php,,,
+,wpseo_cornerstone_post_types,144,"Filter: 'wpseo_cornerstone_post_types' - Filters post types to exclude the cornerstone feature for."
+admin/formatter/class-metabox-formatter.php,,,
+,wpseo_enable_assessment_markers,105,"Filter to determine if the markers should be enabled or not."
+,wpseo_is_markdown_enabled,289,"Filters whether markdown support is active in the readability- and seo-analysis."
+admin/menu/class-admin-menu.php,,,
+,wpseo_submenu_pages,102,"Filter: 'wpseo_submenu_pages' - Collects all submenus that need to be shown."
+admin/metabox/class-metabox.php,,,
+,wpseo_metabox_prio,125,
+,wpseo_tab_translate,195,
+,wpseo_metabox_prio,237,
+,wpseo_cornerstone_post_types,276,"This filter is documented in admin/filters/class-cornerstone-filter.php."
+,wpseo_content_meta_section_content,346,"Filter: 'wpseo_content_meta_section_content' - Allow filtering the metabox content before outputting."
+,yoast_free_additional_metabox_sections,453,"Private filter: 'yoast_free_additional_metabox_sections'."
+,wpseo_do_meta_box_field_{$key},629,
+,wpseo_save_compare_data,713,"Determine we're not accidentally updating a different post."
+,wpseo_save_metaboxes,720,
+,wpseo_saved_postdata,768,
+,wpseo_always_register_metaboxes_on_admin,810,
+admin/pages/dashboard.php,,,
+,wpseo_all_admin_notices,33,
+,wpseo_settings_tabs_dashboard,64,
+,wpseo_dashboard,68,
+admin/pages/tools.php,,,
+,wpseo_tools_overview_list_items,65,"Action: 'wpseo_tools_overview_list_items' - Hook to add additional tools to the overview."
+admin/taxonomy/class-taxonomy-fields.php,,,
+,wpseo_taxonomy_content_fields,96,"Filter: 'wpseo_taxonomy_content_fields' - Adds the possibility to register additional content fields."
+admin/tracking/class-tracking-settings-data.php,,,
+,wpseo_tracking_settings_include_list,179,"Filter: 'wpseo_tracking_settings_include_list' - Allow filtering the settings included in tracking."
+admin/tracking/class-tracking.php,,,
+,wpseo_enable_tracking,215,"Filter: 'wpseo_enable_tracking' - Enables the data tracking of Yoast SEO Premium and add-ons."
+admin/views/class-yoast-feature-toggles.php,,,
+,wpseo_feature_toggles,172,"Filter to add feature toggles from add-ons."
+admin/views/class-yoast-integration-toggles.php,,,
+,wpseo_integration_toggles,99,"Filter to add integration toggles from add-ons."
+admin/views/tabs/dashboard/site-analysis.php,,,
+,wpseo_settings_tab_site_analysis,21,"Fires when displaying the site wide analysis tab."
+admin/views/tabs/metas/paper-content/general/knowledge-graph.php,,,
+,wpseo_knowledge_graph_setting_msg,38,"Filter: 'wpseo_knowledge_graph_setting_msg' - Allows adding a message above these settings."
+admin/views/tabs/metas/paper-content/post-type-content.php,,,
+,wpseo_admin_page_meta_post_types,73,"Allow adding a custom checkboxes to the admin meta page - Post Types tab."
+admin/views/tabs/metas/paper-content/taxonomy-content.php,,,
+,wpseo_admin_page_meta_taxonomies,64,"Allow adding custom checkboxes to the admin meta page - Taxonomies tab."
+admin/views/tabs/social/accounts.php,,,
+,wpseo_admin_other_section,111,
+admin/views/tabs/social/facebook.php,,,
+,wpseo_admin_opengraph_section,89,
+admin/views/tabs/social/pinterest.php,,,
+,wpseo_admin_pinterest_section,38,
+admin/views/tabs/social/twitterbox.php,,,
+,wpseo_admin_twitter_section,34,
+admin/views/tabs/tool/import-seo.php,,,
+,wpseo_import_other_plugins,79,
+admin/views/tool-import-export.php,,,
+,wpseo_handle_import,55,"Allow custom import actions."
+,wpseo_import_message,69,"Allow customization of import/export message."
+,wpseo_import_tab_header,107,"Allow adding a custom import tab header."
+,wpseo_import_tab_content,122,"Allow adding a custom import tab."
+inc/class-upgrade.php,,,
+,wpseo_run_upgrade,94,"Filter: 'wpseo_run_upgrade' - Runs the upgrade hook which are dependent on Yoast SEO."
+,wpseo_register_roles,388,"Clean up stray wpseo_ms options from the options table, option should only exist in the sitemeta table."
+,wpseo_register_capabilities,392,
+,wpseo_register_capabilities,694,
+inc/class-wpseo-admin-bar-menu.php,,,
+,wpseo_use_page_analysis,515,"Filter: 'wpseo_use_page_analysis' Determines if the analysis should be enabled."
+,wpseo_use_page_analysis,534,
+inc/class-wpseo-content-images.php,,,
+,wpseo_pre_analysis_post_content,103,"Filter: 'wpseo_pre_analysis_post_content' - Allow filtering the content before analysis."
+inc/class-wpseo-custom-fields.php,,,
+,postmeta_form_limit,43,"Filters the number of custom fields to retrieve for the drop-down in the Custom Fields meta box."
+inc/class-wpseo-image-utils.php,,,
+,wpseo_image_get_data,140,"Filter: 'wpseo_image_get_data' - Filter image data."
+,wpseo_image_image_weight_limit,164,"Filter: 'wpseo_image_image_weight_limit' - Determines what the maximum weight (in bytes) of an image is allowed to be, default is 2 MB."
+,wpseo_image_sizes,362,"Filter: 'wpseo_image_sizes' - Determines which image sizes we'll loop through to get an appropriate image."
+inc/class-wpseo-meta.php,,,
+,add_extra_wpseo_meta_fields,285,"Allow add-on plugins to register their meta fields for management by this class."
+,wpseo_metabox_entries_{$tab},408,"Filter the WPSEO metabox form field definitions for a tab."
+,wpseo_sanitize_post_meta_{$meta_key},511,
+,delete_post_meta,885,
+,deleted_post_meta,896,
+,wpseo_meta_clean_up,931,
+inc/class-wpseo-replace-vars.php,,,
+,wpseo_register_extra_replacements,92,"Action: 'wpseo_register_extra_replacements' - Allows for registration of additional variables to replace."
+,wpseo_replacements,189,"Filter: 'wpseo_replacements' - Allow customization of the replacements before they are applied."
+,wpseo_replacements_final,209,"Filter: 'wpseo_replacements_final' - Allow overruling of whether or not to remove placeholders which didn't yield a replacement."
+,wpseo_replacements_filter_sep,451,"Filter: 'wpseo_replacements_filter_sep' - Allow customization of the separator character(s)."
+,wpseo_terms,1382,"Allows filtering of the terms list used to replace %%category%%, %%tag%% and %%ct_<custom-tax-name>%% variables."
+inc/class-wpseo-utils.php,,,
+,wpseo_allow_system_file_edit,69,"Filter: 'wpseo_allow_system_file_edit' - Allow developers to change whether the editing of"
+,sanitize_text_field,229,"Filter a sanitized text field string."
+,wpseo_format_admin_url,691,
+,yoast_seo_development_mode,796,"Filter the Yoast SEO development mode."
+,wpseo_admin_l10n,1059,
+,wpseo_home_url,1109,"Action: 'wpseo_home_url' - Allows overriding of the home URL."
+,wpseo_debug_json_data,1151,"Filter the Yoast SEO development mode."
+,wpseo_enable_feature,1357,
+,wpseo_replacements_filter_sep,1431,"Filter: 'wpseo_replacements_filter_sep' - Allow customization of the separator character(s)."
+inc/options/class-wpseo-option-titles.php,,,
+,wpseo_double_clean_titles,159,
+,wpseo_separator_options,188,"Allow altering the array with separator options."
+,wpseo_option_titles_variable_array_key_patterns,829,"Allow altering the array with variable array key patterns."
+,wpseo_separator_option_list,920,"Allows altering the separator options array."
+inc/options/class-wpseo-option-wpseo.php,,,
+,wpseo_enable_tracking,154,"Filter: 'wpseo_enable_tracking' - Enables the data tracking of Yoast SEO Premium."
+,wpseo_option_wpseo_defaults,167,"Filter the `wpseo` option defaults."
+inc/options/class-wpseo-option.php,,,
+,validate_facebook_app_id_api_response_code,445,"Filter: 'validate_facebook_app_id_api_response_code' - Allows to filter the Faceboook API response code."
+,validate_facebook_app_id_api_response_body,451,"Filter: 'validate_facebook_app_id_api_response_body' - Allows to filter the Faceboook API response body."
+,wpseo_defaults,514,
+inc/options/class-wpseo-options.php,,,
+,wpseo_options,205,"Filter: wpseo_options - Allow developers to change the option name to include."
+,default_option_{$option},338,
+,option_{$option},342,
+inc/options/class-wpseo-taxonomy-meta.php,,,
+,wpseo_add_extra_taxmeta_term_defaults,123,
+,wpseo_tax_meta_special_term_id_validation_{$term_id},211,
+,wpseo_tax_meta_special_term_id_validation_{$term_id},227,
+,wpseo_sanitize_tax_meta_{$key},347,
+inc/sitemaps/class-author-sitemap-provider.php,,,
+,wpseo_sitemap_entry,212,"This filter is documented at inc/sitemaps/class-post-type-sitemap-provider.php"
+,wpseo_sitemap_exclude_author,263,"Filter the authors, included in XML sitemap."
+inc/sitemaps/class-post-type-sitemap-provider.php,,,
+,wpseo_xml_sitemap_include_images,47,"Filter - Allows excluding images from the XML sitemap."
+,wpseo_sitemap_entry,233,"Filter URL entry before it gets added to the sitemap."
+,wpseo_sitemap_exclude_post_type,276,"Filter decision if post type is excluded from the XML sitemap."
+,wpseo_exclude_from_sitemap_by_post_ids,303,"Filter: 'wpseo_exclude_from_sitemap_by_post_ids' - Allow extending and modifying the posts to exclude."
+,wpseo_typecount_join,335,"Filter JOIN query part for type count of post type."
+,wpseo_typecount_where,343,"Filter WHERE query part for type count of post type."
+,wpseo_sitemap_post_type_archive_link,398,"Filter the URL Yoast SEO uses in the XML sitemap for this post type archive."
+,wpseo_sitemap_page_for_post_type_archive,478,"Filter the page which is dedicated to this post type archive."
+,wpseo_posts_join,511,"Filter JOIN query part for the post type."
+,wpseo_posts_where,519,"Filter WHERE query part for the post type."
+,wpseo_xml_sitemap_post_url,615,"Filter the URL Yoast SEO uses in the XML sitemap."
+inc/sitemaps/class-sitemap-image-parser.php,,,
+,wpseo_sitemap_content_before_parse_html_images,98,"Filter: 'wpseo_sitemap_content_before_parse_html_images' - Filters the post content before it is parsed for images."
+,wpseo_sitemap_urlimages,135,"Filter images to be included for the post in XML sitemap."
+,wpseo_xml_sitemap_img_src,316,"Filter image URL to be included in XML sitemap for the post."
+,wpseo_xml_sitemap_img,339,"Filter image data to be included in XML sitemap for the post."
+,wp_get_attachment_url,379,
+inc/sitemaps/class-sitemaps-admin.php,,,
+,wpseo_allow_xml_sitemap_ping,74,"Filter: 'wpseo_allow_xml_sitemap_ping' - Check if pinging is not allowed (allowed by default)."
+,wpseo_hit_sitemap_index,134,
+inc/sitemaps/class-sitemaps-cache.php,,,
+,wpseo_enable_xml_sitemap_transient_caching,86,"Filter if XML sitemap transient cache is enabled."
+inc/sitemaps/class-sitemaps-renderer.php,,,
+,wpseo_sitemap_index,89,"Filter to append sitemaps to the index."
+,wpseo_sitemap_{$type}_urlset,116,"Filters the `urlset` for a sitemap by type."
+,wpseo_sitemap_{$type}_content,130,"Filter to add extra URLs to the XML sitemap by type."
+,wpseo_stylesheet_url,156,"Filter the stylesheet URL for the XML sitemap."
+,wpseo_sitemap_url,283,"Filters the output for the sitemap URL tag."
+inc/sitemaps/class-sitemaps-router.php,,,
+,wpseo_sitemaps_base_url,119,"Filter the base URL of the sitemaps."
+inc/sitemaps/class-sitemaps.php,,,
+,wpseo_sitemaps_providers,135,
+,wpseo_sitemap_stylesheet_cache_{$type},299,"Fires before the attempt to retrieve XML sitemap from the transient cache."
+,wpseo_build_sitemap_post_type,346,"Filter the type of sitemap to build."
+,wpseo_do_sitemap_{$type},378,"Fires custom handler, if hooked to generate sitemap for the type."
+,wpseo_sitemap_index_links,403,"Filter the sitemap links array before the index sitemap is built."
+,wpseo_xsl_{$type},429,"Fires for the output of XSL for XML sitemaps, other than type ""main""."
+,wpseo_allow_xml_sitemap_ping,556,"Filter: 'wpseo_allow_xml_sitemap_ping' - Check if pinging is not allowed (allowed by default)"
+,wpseo_sitemap_entries_per_page,587,"Filter the maximum number of entries per XML sitemap."
+,wpseo_sitemap_post_statuses,608,"Filter post status list for sitemap query for the post type."
+,wpseo_sitemap_http_headers,643,"Filter the HTTP headers we send before an XML sitemap."
+inc/sitemaps/class-taxonomy-sitemap-provider.php,,,
+,wpseo_xml_sitemap_include_images,36,"Filter - Allows excluding images from the XML sitemap."
+,wpseo_sitemap_exclude_empty_terms,82,"Filter the setting of excluding empty terms from the XML sitemap."
+,wpseo_sitemap_exclude_empty_terms_taxonomy,93,"Filter the setting of excluding empty terms from the XML sitemap for a specific taxonomy."
+,wpseo_sitemap_exclude_empty_terms,193,"This filter is documented in inc/sitemaps/class-taxonomy-sitemap-provider.php"
+,wpseo_sitemap_exclude_empty_terms_taxonomy,195,"This filter is documented in inc/sitemaps/class-taxonomy-sitemap-provider.php"
+,wpseo_exclude_from_sitemap_by_term_ids,229,"Filter: 'wpseo_exclude_from_sitemap_by_term_ids' - Allow excluding terms by ID."
+,wpseo_sitemap_entry,262,"This filter is documented at inc/sitemaps/class-post-type-sitemap-provider.php"
+,wpseo_sitemap_exclude_taxonomy,299,"Filter to exclude the taxonomy from the XML sitemap."
+inc/wpseo-functions.php,,,
+,wpseo_register_capabilities,249,
+lib/orm.php,,,
+,_yoast_run_migrations,1947,"An instance of Model is being made."
+src/actions/indexing/abstract-link-indexing-action.php,,,
+,wpseo_link_indexing_limit,118,"Filter 'wpseo_link_indexing_limit' - Allow filtering the number of texts indexed during each link indexing pass."
+src/actions/indexing/indexable-post-indexation-action.php,,,
+,wpseo_post_indexation_limit,109,"Filter 'wpseo_post_indexation_limit' - Allow filtering the amount of posts indexed during each indexing pass."
+src/actions/indexing/indexable-post-type-archive-indexation-action.php,,,
+,wpseo_post_type_archive_indexation_limit,105,"Filter 'wpseo_post_type_archive_indexation_limit' - Allow filtering the number of posts indexed during each indexing pass."
+src/actions/indexing/indexable-term-indexation-action.php,,,
+,wpseo_term_indexation_limit,109,"Filter 'wpseo_term_indexation_limit' - Allow filtering the number of terms indexed during each indexing pass."
+src/builders/indexable-builder.php,,,
+,wpseo_should_save_indexable,296,"Filter: 'wpseo_override_save_indexable' - Allow developers to enable / disable saving the indexable when the indexable is updated. Warning: overriding the intended action may cause problems when moving from a staging to a production environment because indexable permalinks may get set incorrectly."
+,wpseo_save_indexable,314,"Action: 'wpseo_save_indexable' - Allow developers to perform an action when the indexable is updated."
+src/builders/indexable-link-builder.php,,,
+,the_content,87,
+src/builders/indexable-post-builder.php,,,
+,wpseo_public_post_statuses,230,"Filter: 'wpseo_public_post_statuses' - List of public post statuses."
+src/commands/index-command.php,,,
+,_yoast_run_migrations,145,
+src/conditionals/should-index-links-conditional.php,,,
+,wpseo_should_index_links,41,"Filter: 'wpseo_should_index_links' - Allows disabling of Yoast's links indexation."
+src/context/meta-tags-context.php,,,
+,wpseo_schema_company_name,277,"Filter: 'wpseo_schema_company_name' - Allows filtering company name"
+,wpseo_schema_company_logo_id,293,"Filter: 'wpseo_schema_company_logo_id' - Allows filtering company logo id"
+,wpseo_schema_webpage_type,450,"Filter: 'wpseo_schema_webpage_type' - Allow changing the WebPage type."
+,wpseo_schema_article_type,484,"Filter: 'wpseo_schema_article_type' - Allow changing the Article type."
+src/deprecated/class-metabox-addon-section.php,,,
+,wpseo_tab_header,45,
+,wpseo_tab_content,50,
+src/deprecated/frontend/breadcrumbs.php,,,
+,wpseo_frontend_presentation,136,"This filter is documented in src/integrations/front-end-integration.php"
+src/deprecated/frontend/class-opengraph.php,,,
+,wpseo_og_{$og_property},58,"Filter: 'wpseo_og_' . $og_property - Allow developers to change the content of specific OG meta tags."
+src/deprecated/frontend/frontend.php,,,
+,wpseo_frontend_presentation,272,"This filter is documented in src/integrations/front-end-integration.php"
+src/deprecated/frontend/schema/class-schema-person.php,,,
+,wpseo_schema_person_social_profiles,92,"Filter: 'wpseo_schema_person_social_profiles' - Allows filtering of social profiles per user."
+src/generators/breadcrumbs-generator.php,,,
+,wpseo_breadcrumb_indexables,139,
+,wpseo_breadcrumb_links,181,"Filter: 'wpseo_breadcrumb_links' - Allow the developer to filter the Yoast SEO breadcrumb links, add to them, change order, etc."
+,wpseo_breadcrumb_single_link_info,192,"Filter: 'wpseo_breadcrumb_single_link_info' - Allow developers to filter the Yoast SEO Breadcrumb link information."
+src/generators/open-graph-image-generator.php,,,
+,wpseo_add_opengraph_images,90,"Filter: wpseo_add_opengraph_images - Allow developers to add images to the Open Graph tags."
+,wpseo_add_opengraph_additional_images,104,"Filter: wpseo_add_opengraph_additional_images - Allows to add additional images to the Open Graph tags."
+src/generators/open-graph-locale-generator.php,,,
+,wpseo_locale,27,"Filter: 'wpseo_locale' - Allow changing the locale output."
+src/generators/schema/article.php,,,
+,wpseo_schema_article_keywords_taxonomy,94,"Filter: 'wpseo_schema_article_keywords_taxonomy' - Allow changing the taxonomy used to assign keywords to a post type Article data."
+,wpseo_schema_article_sections_taxonomy,112,"Filter: 'wpseo_schema_article_sections_taxonomy' - Allow changing the taxonomy used to assign keywords to a post type Article data."
+,wpseo_schema_article_potential_action_target,178,"Filter: 'wpseo_schema_article_potential_action_target' - Allows filtering of the schema Article potentialAction target."
+src/generators/schema/author.php,,,
+,wpseo_schema_person_user_id,82,"Filter: 'wpseo_schema_person_user_id' - Allows filtering of user ID used for person output."
+src/generators/schema/organization.php,,,
+,wpseo_schema_organization_social_profiles,74,"Filter: 'wpseo_schema_organization_social_profiles' - Allows filtering social profiles for the represented organization."
+src/generators/schema/person.php,,,
+,wpseo_schema_person_user_id,77,"Filter: 'wpseo_schema_person_user_id' - Allows filtering of user ID used for person output."
+,wpseo_schema_person_social_profiles,104,"Filter: 'wpseo_schema_person_social_profiles' - Allows filtering of social profiles per user."
+src/generators/schema/third-party/events-calendar-schema.php,,,
+,yoast_tec_json_ld_{$type}_data,120,"Allows the event data to be modifed by themes and other plugins."
+src/generators/schema/webpage.php,,,
+,wpseo_schema_webpage_potential_action_target,128,"Filter: 'wpseo_schema_webpage_potential_action_target' - Allows filtering of the schema WebPage potentialAction target."
+src/generators/schema/website.php,,,
+,disable_wpseo_json_ld_search,77,"Filter: 'disable_wpseo_json_ld_search' - Allow disabling of the json+ld output."
+,wpseo_json_ld_search_url,86,"Filter: 'wpseo_json_ld_search_url' - Allows filtering of the search URL for Yoast SEO."
+src/generators/schema-generator.php,,,
+,wpseo_pre_schema_block_type_{$block_type},51,"Filter: 'wpseo_pre_schema_block_type_<block-type>' - Allows hooking things to change graph output based on the blocks on the page."
+,wpseo_schema_needs_{$identifier},74,"Filter: 'wpseo_schema_needs_<identifier>' - Allows changing which graph pieces we output."
+,wpseo_schema_{$identifier},101,"Filter: 'wpseo_schema_<identifier>' - Allows changing graph piece output."
+,wpseo_schema_block_{$block_type},122,"Filter: 'wpseo_schema_block_<block-type>' - Allows filtering graph output per block."
+,wpseo_schema_graph_pieces,202,"Filter: 'wpseo_schema_graph_pieces' - Allows adding pieces to the graph."
+,wpseo_schema_{$type},228,"Filter: 'wpseo_schema_<type>' - Allows changing graph piece output by @type."
+src/helpers/author-archive-helper.php,,,
+,wpseo_author_archive_post_types,23,"Filters the array of post types that are shown on an author's archive."
+src/helpers/current-page-helper.php,,,
+,wpseo_frontend_page_type_simple_page_id,94,"Filter: Allow changing the default page id."
+src/helpers/indexable-helper.php,,,
+,wpseo_dynamic_permalinks_enabled,151,"Filters the value of the `dynamic_permalinks` option."
+src/helpers/open-graph/image-helper.php,,,
+,wpseo_opengraph_is_valid_image_url,62,"Filter: 'wpseo_opengraph_is_valid_image_url' - Allows extra validation for an image url."
+,wpseo_opengraph_image_size,85,"Filter: 'wpseo_opengraph_image_size' - Allow overriding the image size used for Open Graph sharing. If this filter is used, the defined size will always be used for the og:image. The image will still be rejected if it is too small."
+src/helpers/pagination-helper.php,,,
+,wpseo_disable_adjacent_rel_links,54,"Filter: 'wpseo_disable_adjacent_rel_links' - Allows disabling of Yoast adjacent links if this is being handled by other code."
+src/helpers/post-type-helper.php,,,
+,wpseo_accessible_post_types,72,"Filter: 'wpseo_accessible_post_types' - Allow changing the accessible post types."
+src/helpers/primary-term-helper.php,,,
+,wpseo_primary_term_taxonomies,33,"Filters which taxonomies for which the user can choose the primary term."
+src/helpers/schema/article-helper.php,,,
+,wpseo_schema_article_post_types,27,"Filter: 'wpseo_schema_article_post_types' - Allow changing for which post types we output Article schema."
+src/helpers/schema/language-helper.php,,,
+,wpseo_schema_piece_language,27,"Filter: 'wpseo_schema_piece_language' - Allow changing the Schema piece language."
+src/helpers/twitter/image-helper.php,,,
+,wpseo_twitter_image_size,41,"Filter: 'wpseo_twitter_image_size' - Allow changing the Twitter Card image size."
+src/integrations/admin/background-indexing-integration.php,,,
+,wpseo_shutdown_indexation_limit,185,"Filter 'wpseo_shutdown_indexation_limit' - Allow filtering the number of objects that can be indexed during shutdown."
+src/integrations/admin/indexing-tool-integration.php,,,
+,wpseo_indexing_data,183,"Filter: 'wpseo_indexing_data' Filter to adapt the data used in the indexing process."
+,wpseo_indexing_get_unindexed_count,215,
+,wpseo_indexing_endpoints,247,
+src/integrations/admin/link-count-columns-integration.php,,,
+,wpseo_link_count_post_types,111,
+src/integrations/blocks/structured-data-blocks.php,,,
+,wpseo_enable_structured_data_blocks,52,"Filter: 'wpseo_enable_structured_data_blocks' - Allows disabling Yoast's schema blocks entirely."
+src/integrations/breadcrumbs-integration.php,,,
+,wpseo_frontend_presentation,75,"This filter is documented in src/integrations/front-end-integration.php"
+src/integrations/front-end/backwards-compatibility.php,,,
+,wpseo_output_twitter_card,50,
+,wpseo_opengraph,61,
+,wpseo_twitter,70,
+src/integrations/front-end/comment-link-fixer.php,,,
+,wpseo_remove_reply_to_com,135,"Filter: 'wpseo_remove_reply_to_com' - Allow disabling the feature that removes ?replytocom query parameters."
+src/integrations/front-end/redirects.php,,,
+,wpseo_attachment_redirect_url,173,"Allows the developer to change the target redirection URL for attachments."
+src/integrations/front-end/rss-footer-embed.php,,,
+,wpseo_include_rss_footer,102,"Filter: 'wpseo_include_rss_footer' - Allow the RSS footer to be dynamically shown/hidden."
+,nofollow_rss_links,191,"Filter: 'nofollow_rss_links' - Allow the developer to determine whether or not to follow the links in the bits Yoast SEO adds to the RSS feed, defaults to true."
+src/integrations/front-end-integration.php,,,
+,wpseo_frontend_presentation,233,"This filter is documented in src/integrations/front-end-integration.php"
+,wpseo_head,252,
+,wpseo_frontend_presentation,269,"Filter 'wpseo_frontend_presentation' - Allow filtering the presentation used to output our meta values."
+,wpseo_frontend_presenters,308,"Filter 'wpseo_frontend_presenters' - Allow filtering the presenter instances in or out of the request."
+,wpseo_frontend_presenter_classes,351,"Filter 'wpseo_frontend_presenter_classes' - Allow filtering presenters in or out of the request."
+,wpseo_output_twitter_card,395,
+,wpseo_output_enhanced_slack_data,398,
+src/integrations/watchers/indexable-homeurl-watcher.php,,,
+,wpseo_post_types_reset_permalinks,129,"Filter: Gives the possibility to filter out post types."
+src/integrations/watchers/indexable-permalink-watcher.php,,,
+,wpseo_post_types_reset_permalinks,207,"Filter: Gives the possibility to filter out post types."
+src/loggers/logger.php,,,
+,wpseo_logger,35,"Gives the possibility to set override the logger interface."
+src/presentations/indexable-post-type-presentation.php,,,
+,wpseo_opengraph_show_publish_date,265,"Filter: 'wpseo_opengraph_show_publish_date' - Allow showing publication date for other post types."
+,wpseo_twitter_creator_account,379,"Filter: 'wpseo_twitter_creator_account' - Allow changing the Twitter account as output in the Twitter card by Yoast SEO."
+src/presentations/indexable-presentation.php,,,
+,wpseo_robots,301,"Filter: 'wpseo_robots' - Allows filtering of the meta robots output of Yoast SEO."
+,wpseo_robots_array,338,"Filter: 'wpseo_robots_array' - Allows filtering of the meta robots output array of Yoast SEO."
+src/presenters/admin/indexing-notification-presenter.php,,,
+,wpseo_indexables_indexation_alert,96,"Filter: 'wpseo_indexables_indexation_alert' - Allow developers to filter the reason of the indexation"
+src/presenters/bingbot-presenter.php,,,
+,wpseo_bingbot,64,"Filter: 'wpseo_bingbot' - Allows filtering of the meta bingbot output of Yoast SEO."
+src/presenters/breadcrumbs-presenter.php,,,
+,wpseo_breadcrumb_output,108,"Filter: 'wpseo_breadcrumb_output' - Allow changing the HTML output of the Yoast SEO breadcrumbs class."
+,wpseo_breadcrumb_single_link,170,"Filter: 'wpseo_breadcrumb_single_link' - Allow changing of each link being put out by the Yoast SEO breadcrumbs class."
+,wpseo_breadcrumb_output_id,185,"Filter: 'wpseo_breadcrumb_output_id' - Allow changing the HTML ID on the Yoast SEO breadcrumbs wrapper element."
+,wpseo_breadcrumb_output_class,210,"Filter: 'wpseo_breadcrumb_output_class' - Allow changing the HTML class on the Yoast SEO breadcrumbs wrapper element."
+,wpseo_breadcrumb_output_wrapper,230,
+,wpseo_breadcrumb_separator,247,
+,wpseo_breadcrumb_single_link_wrapper,261,
+src/presenters/canonical-presenter.php,,,
+,wpseo_canonical,43,"Filter: 'wpseo_canonical' - Allow filtering of the canonical URL put out by Yoast SEO."
+src/presenters/debug/marker-close-presenter.php,,,
+,wpseo_debug_markers,23,"Filter: 'wpseo_debug_markers' - Allow disabling the debug markers."
+src/presenters/debug/marker-open-presenter.php,,,
+,wpseo_debug_markers,24,"Filter: 'wpseo_debug_markers' - Allow disabling the debug markers."
+,wpseo_hide_version,36,"Filter: 'wpseo_hide_version' - can be used to hide the Yoast SEO version in the debug marker (only available in Yoast SEO Premium)."
+src/presenters/googlebot-presenter.php,,,
+,wpseo_googlebot,64,"Filter: 'wpseo_googlebot' - Allows filtering of the meta googlebot output of Yoast SEO."
+src/presenters/meta-description-presenter.php,,,
+,wpseo_metadesc,59,"Filter: 'wpseo_metadesc' - Allow changing the Yoast SEO meta description sentence."
+src/presenters/open-graph/article-author-presenter.php,,,
+,wpseo_opengraph_author_facebook,33,"Filter: 'wpseo_opengraph_author_facebook' - Allow developers to filter the article author's Facebook URL."
+src/presenters/open-graph/article-publisher-presenter.php,,,
+,wpseo_og_article_publisher,33,"Filter: 'wpseo_og_article_publisher' - Allow developers to filter the article publisher's Facebook URL."
+src/presenters/open-graph/description-presenter.php,,,
+,wpseo_opengraph_desc,33,"Filter: 'wpseo_opengraph_desc' - Allow changing the Yoast SEO generated Open Graph description."
+src/presenters/open-graph/image-presenter.php,,,
+,wpseo_opengraph_image,84,"Filter: 'wpseo_opengraph_image' - Allow changing the Open Graph image."
+src/presenters/open-graph/locale-presenter.php,,,
+,wpseo_og_locale,33,"Filter: 'wpseo_og_locale' - Allow changing the Yoast SEO Open Graph locale."
+src/presenters/open-graph/site-name-presenter.php,,,
+,wpseo_opengraph_site_name,33,"Filter: 'wpseo_opengraph_site_name' - Allow changing the Yoast SEO generated Open Graph site name."
+src/presenters/open-graph/title-presenter.php,,,
+,wpseo_opengraph_title,34,"Filter: 'wpseo_opengraph_title' - Allow changing the Yoast SEO generated title."
+src/presenters/open-graph/type-presenter.php,,,
+,wpseo_opengraph_type,33,"Filter: 'wpseo_opengraph_type' - Allow changing the opengraph type."
+src/presenters/open-graph/url-presenter.php,,,
+,wpseo_opengraph_url,40,"Filter: 'wpseo_opengraph_url' - Allow changing the Yoast SEO generated open graph URL."
+src/presenters/rel-next-presenter.php,,,
+,wpseo_next_rel_link,40,"Filter: 'wpseo_next_rel_link' - Allow changing link rel output by Yoast SEO."
+,wpseo_adjacent_rel_url,64,"Filter: 'wpseo_adjacent_rel_url' - Allow filtering of the rel next URL put out by Yoast SEO."
+src/presenters/rel-prev-presenter.php,,,
+,wpseo_prev_rel_link,40,"Filter: 'wpseo_prev_rel_link' - Allow changing link rel output by Yoast SEO."
+,wpseo_adjacent_rel_url,63,"Filter: 'wpseo_adjacent_rel_url' - Allow filtering of the rel prev URL put out by Yoast SEO."
+src/presenters/schema-presenter.php,,,
+,wpseo_json_ld_output,27,"Filter: 'wpseo_json_ld_output' - Allows disabling Yoast's schema output entirely."
+,wpseo_json_ld,35,"Action: 'wpseo_json_ld' - Output Schema before the main schema from Yoast SEO is output."
+src/presenters/slack/enhanced-data-presenter.php,,,
+,wpseo_enhanced_data,47,
+src/presenters/title-presenter.php,,,
+,wpseo_title,53,"Filter: 'wpseo_title' - Allow changing the Yoast SEO generated title."
+src/presenters/twitter/card-presenter.php,,,
+,wpseo_twitter_card_type,33,"Filter: 'wpseo_twitter_card_type' - Allow changing the Twitter card type."
+src/presenters/twitter/description-presenter.php,,,
+,wpseo_twitter_description,33,"Filter: 'wpseo_twitter_description' - Allow changing the Twitter description as output in the Twitter card by Yoast SEO."
+src/presenters/twitter/image-presenter.php,,,
+,wpseo_twitter_image,40,"Filter: 'wpseo_twitter_image' - Allow changing the Twitter Card image."
+src/presenters/twitter/site-presenter.php,,,
+,wpseo_twitter_site,33,"Filter: 'wpseo_twitter_site' - Allow changing the Twitter site account as output in the Twitter card by Yoast SEO."
+src/presenters/twitter/title-presenter.php,,,
+,wpseo_twitter_title,33,"Filter: 'wpseo_twitter_title' - Allow changing the Twitter title."
+src/surfaces/meta-surface.php,,,
+,date_rewrite_rules,342,
+src/surfaces/values/meta.php,,,
+,wpseo_frontend_presentation,132,"This filter is documented in src/integrations/front-end-integration.php"
+,wpseo_frontend_presentation,158,"This filter is documented in src/integrations/front-end-integration.php"
+wp-seo-main.php,,,
+,wpseo_register_roles,197,"Only use minified assets when we are in a production environment."
+,wpseo_register_capabilities,200,
+,wpseo_activate,210,
+,wpseo_register_roles,226,
+,wpseo_register_capabilities,227,
+,wpseo_deactivate,236,

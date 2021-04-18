@@ -95,7 +95,7 @@ class DocCallable extends BaseDocPart implements DocPart {
 	 *
 	 * @return string The name of the callable.
 	 */
-	public function getName() {
+	public function getName(): string {
 		return $this->name;
 	}
 

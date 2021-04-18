@@ -48,6 +48,8 @@ class File_Reflector extends FileReflector {
 	 */
 	protected $last_doc = null;
 
+	public $hooks = [];
+
 	/**
 	 * Add hooks to the queue and update the node stack when we enter a node.
 	 *
@@ -83,6 +85,7 @@ class File_Reflector extends FileReflector {
 			// Parse out hook definitions and function calls and add them to the queue.
 			case 'Expr_FuncCall':
 				$function = new Function_Call_Reflector( $node, $this->context );
+				$this->getLocation()->uses['hooks'] = [];
 
 				// Add the call to the list of functions used in this scope.
 				$this->getLocation()->uses['functions'][] = $function;
@@ -97,6 +100,7 @@ class File_Reflector extends FileReflector {
 
 					// Add it to the list of hooks used in this scope.
 					$this->getLocation()->uses['hooks'][] = $hook;
+					$this->hooks[] = $hook;
 				}
 				break;
 
@@ -204,11 +208,6 @@ class File_Reflector extends FileReflector {
 	 * @return bool
 	 */
 	protected function isFilter( Node $node ) {
-		// Ignore variable functions
-		if ( $node->name->getType() !== 'Name' ) {
-			return false;
-		}
-
 		$calling = (string) $node->name;
 
 		$functions = [
@@ -218,9 +217,16 @@ class File_Reflector extends FileReflector {
 			'do_action',
 			'do_action_ref_array',
 			'do_action_deprecated',
+
+			'\apply_filters',
+			'\apply_filters_ref_array',
+			'\apply_filters_deprecated',
+			'\do_action',
+			'\do_action_ref_array',
+			'\do_action_deprecated',
 		];
 
-		return in_array( $calling, $functions );
+		return in_array( $calling, $functions, true );
 	}
 
 	/**
@@ -250,5 +256,9 @@ class File_Reflector extends FileReflector {
 	 */
 	protected function addMethod( Method_Call_Reflector $method ): void {
 		$this->getLocation()->uses['methods'][] = $method;
+	}
+
+	public function getHooks() {
+		return array_map( function( $item ) {}, $this->uses );
 	}
 }

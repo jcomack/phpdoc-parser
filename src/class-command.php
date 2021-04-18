@@ -6,9 +6,7 @@ use Tightenco\Collect\Support\Collection;
 use WP_CLI;
 use WP_CLI_Command;
 use WP_Error;
-
-// Temporary toggle until we figure out what's going wrong with the plugins taxonomy.
-const USE_PLUGIN_PREFIX = false;
+use WP_Parser\Commands\ExportCommand;
 
 /**
  * Converts PHPDoc markup into a template ready for import to a WordPress blog.
@@ -18,61 +16,24 @@ class Command extends WP_CLI_Command {
 	/**
 	 * Generate a JSON file containing the PHPDoc markup, and save to filesystem.
 	 *
-	 * @synopsis <directory> [<output_file>] [--ignore_files]
+	 * @synopsis <directory> [<output_file>] [--ignore_files] [--format]
 	 *
 	 * @param array $args       The arguments to pass to the command.
 	 * @param array $assoc_args The associated arguments to pass to the command.
 	 */
-	public function export( $args, $assoc_args ) {
-		$directory    = realpath( $args[0] );
-		$output_file  = empty( $args[1] ) ? 'phpdoc.json' : $args[1];
-		$ignore_files = $this->getIgnoreFiles( $assoc_args );
+	public function export( array $args, array $assoc_args ) {
+		$command = new ExportCommand( $args, $assoc_args );
+		$results = $command->run();
 
-		$json        = $this->_get_phpdoc_data( $directory, 'json', $ignore_files );
-		$result      = file_put_contents( $output_file, $json );
 		WP_CLI::line();
 
-		if ( $result === false ) {
-			WP_CLI::error( sprintf( 'Problem writing %1$s bytes of data to %2$s', strlen( $json ), $output_file ) );
+		if ( $results['data'] === false ) {
+			WP_CLI::error( sprintf( 'Problem writing data to %1$s', $results['file'] ) );
 			exit;
 		}
 
-		WP_CLI::success( sprintf( 'Data exported to %1$s', $output_file ) );
+		WP_CLI::success( sprintf( 'Data exported to %1$s', $results['file'] ) );
 		WP_CLI::line();
-	}
-
-	/**
-	 * Read a JSON file containing the PHPDoc markup, convert it into WordPress posts, and insert into DB.
-	 *
-	 * @synopsis <file> [--quick] [--import-internal]
-	 *
-	 * @param array $args		The arguments to pass to the command.
-	 * @param array $assoc_args The associated arguments to pass to the command.
-	 */
-	public function import( $args, $assoc_args ) {
-		list( $file ) = $args;
-		WP_CLI::line();
-
-		// Get the data from the <file>, and check it's valid.
-		$phpdoc = false;
-
-		if ( is_readable( $file ) ) {
-			$phpdoc = file_get_contents( $file );
-		}
-
-		if ( ! $phpdoc ) {
-			WP_CLI::error( sprintf( "Can't read %1\$s. Does the file exist?", $file ) );
-			exit;
-		}
-
-		$phpdoc = json_decode( $phpdoc, true );
-		if ( is_null( $phpdoc ) ) {
-			WP_CLI::error( sprintf( "JSON in %1\$s can't be decoded :(", $file ) );
-			exit;
-		}
-
-		// Import data
-		$this->_do_import( $phpdoc, isset( $assoc_args['import-internal'] ) );
 	}
 
 	/**
@@ -84,7 +45,7 @@ class Command extends WP_CLI_Command {
 	 * @param array $args       The arguments to pass to the command.
 	 * @param array $assoc_args The associated arguments to pass to the command.
 	 */
-	public function create( $args, $assoc_args ) {
+	public function create( array $args, array $assoc_args ) {
 		list( $directory ) = $args;
 		$directory = realpath( $directory );
 		$ignore_files = $this->getIgnoreFiles( $assoc_args );
@@ -109,9 +70,9 @@ class Command extends WP_CLI_Command {
 	 * @param string $format       What format the data is returned in: [json|array].
 	 * @param array  $ignore_files What files to ignore.
 	 *
-	 * @return string|array
+	 * @return Collection The collected data.
 	 */
-	protected function _get_phpdoc_data( $path, $format = 'json', $ignore_files = [] ) {
+	protected function _get_phpdoc_data( string $path, $format = 'json', $ignore_files = [] ) {
 		$ignore_files = ! empty( $ignore_files ) ? $ignore_files : [
 			'vendor',
 			'vendor_prefixed',

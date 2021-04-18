@@ -201,8 +201,8 @@ class DocFile extends DocAbstract {
 		$this->includes  = DocInclude::fromReflector( $file->getIncludes() );
 		$this->constants = DocConstant::fromReflector( $file->getConstants() );
 
-		if ( ! empty( $file->uses ) && ! empty( $file->uses['hooks'] ) ) {
-			$this->hooks = DocPartFactory::fromHooks( $file->uses['hooks'] );
+		if ( ! empty( $file->hooks ) ) {
+			$this->hooks = DocPartFactory::fromHooks( $file->hooks );
 		}
 
 		$this->functions = DocPartFactory::fromFunctions( $file->getFunctions() );

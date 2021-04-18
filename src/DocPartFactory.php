@@ -40,7 +40,7 @@ class DocPartFactory {
 	public static function fromFiles( Finder $files, string $root_directory, PluginInterface $plugin ) {
 		return new Collection( array_map( function( $file ) use( $root_directory, $plugin ) {
 			return new DocFile( $file, $root_directory, $plugin );
-		}, iterator_to_array( $files ) ) );
+		}, iterator_to_array( $files, false ) ) );
 	}
 
 	/**

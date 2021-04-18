@@ -15,11 +15,9 @@ if ( file_exists( __DIR__ . '/vendor/autoload.php' ) ) {
 
 global $wp_parser;
 
+if ( ! defined( 'PHPDOC_PARSER_DIR' ) ) {
+	define( 'PHPDOC_PARSER_DIR', dirname( __FILE__ ) );
+}
+
 $wp_parser = new WP_Parser\Parser();
 $wp_parser->on_load();
-
-register_activation_hook( __FILE__, array( 'P2P_Storage', 'init' ) );
-register_activation_hook( __FILE__, array( 'P2P_Storage', 'install' ) );
-
-// TODO safer handling for uninstall
-//register_uninstall_hook( __FILE__, array( 'P2P_Storage', 'uninstall' ) );

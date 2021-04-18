@@ -101,9 +101,6 @@ class DocHook extends BaseDocPart implements DocPart {
 		return $this->doc;
 	}
 
-
-
-
 	/**
 	 * Creates a hook from the reflector.
 	 *

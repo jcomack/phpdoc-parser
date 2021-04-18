@@ -23,7 +23,7 @@
 		"scribu/scb-framework"     : "dev-master@dev",
 		"psr/log"                  : "~1.0",
 		"symfony/finder": "^4.2",
-		"tightenco/collect": "^6.5"
+		"tightenco/collect": "^8.0"
 	},
 	"autoload"   : {
 		"classmap": ["src"],
